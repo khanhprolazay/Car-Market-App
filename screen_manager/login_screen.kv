@@ -1,0 +1,120 @@
+#:import get_color_from_hex kivy.utils.get_color_from_hex
+<LoginForm>:
+    email: email
+    password: password
+    MDScreen:
+        md_bg_color: get_color_from_hex('#000000')
+        MDCard:
+            size_hint: None,None
+            size: 300, 400
+            pos_hint: {"center_x": 0.5, "center_y": 0.5}
+            elevation: 10
+            padding: 25
+            spacing: 25
+            orientation: 'vertical'
+            md_bg_color: get_color_from_hex('#2a2424')
+
+            MDLabel:
+                id: welcome_label
+                text: "WELCOME"
+                font_size: 40
+                font_style: "H3"
+                halign: 'center'
+                size_hint_y: None
+                height: self.texture_size[1]
+                padding_y: 15
+                theme_text_color: 'Custom'
+                text_color: get_color_from_hex('#FFFFFF')
+
+            MDTextFieldRound:
+                id: email
+                hint_text: "Username"
+                icon_left: "account"
+                font_style: "H3"
+                size_hint_x: None
+                width: 200
+                font_size: 18
+                pos_hint: {"center_x": 0.5}
+            
+            MDTextFieldRound:
+                id: password
+                hint_text: "Password"
+                icon_left: "eye-off"
+                font_style: "H3"
+                size_hint_x: None
+                width: 200
+                font_size: 18
+                pos_hint: {"center_x": 0.5}
+                password: True
+
+            MDRoundFlatButton:
+                text: "Don't have an Account? Create One"
+                font_style: "H3"
+                font_size: 12
+                pos_hint: {"center_x": 0.5}
+                theme_text_color: 'Custom'
+                text_color: get_color_from_hex('#FFFFFF')
+                on_release:
+                    root.manager.transition.direction = 'left' 
+                    root.manager.current = 'register'
+            
+            MDRoundFlatButton:
+                text: "Log in"
+                font_style: "H3"
+                font_size: 12
+                pos_hint: {"center_x": 0.5}
+                theme_text_color: 'Custom'
+                text_color: get_color_from_hex('#FFFFFF')
+                on_release:
+                    root.manager.transition.direction = 'left' 
+                    root.validate()
+            
+            Widget:
+                size_hint_y: None
+                height: 10
+
+<RegisterForm>:
+    fullname: fullname
+    email: email
+    password: password
+    confPass: confPass
+    MDFloatLayout:
+        MDLabel:
+            text: "Register Form"
+            pos_hint: {"center_y": .95}
+            font_style: "H3"
+            halign: "center"
+            # theme_text_color: "Custom"
+            text_color: 1,0,0,1
+        MDTextField:
+            id: fullname
+            hint_text: "Enter your full name: "
+            pos_hint: {"center_x": .5,"center_y": .8}
+            size_hint_x: .8
+        MDTextField:
+            id: email
+            hint_text: "Enter your email: "
+            pos_hint: {"center_x": .5,"center_y": .7}
+            size_hint_x: .8
+        MDTextField:
+            id: password
+            hint_text: "Enter your password: "
+            pos_hint: {"center_x": .5,"center_y": .6}
+            size_hint_x: .8
+            password: True
+        MDTextField:
+            id: confPass
+            hint_text: "Confirm password: "
+            pos_hint: {"center_x": .5,"center_y": .5}
+            size_hint_x: .8
+            password: True
+        MDRoundFlatButton:
+            text: "Submit"
+            font_style: "H3"
+            font_size: 14
+            pos_hint: {"center_x": .5,"top": .4}
+            on_release:
+                root.manager.transition.direction = 'right' 
+                root.loginBtn()
+
+
