@@ -1,5 +1,5 @@
 from kivymd.uix.screen import MDScreen
-from components.car_card import CarCard 
+from main import CarCard 
 from kivy.lang import Builder
 from kivy.core.window import Window
 import pandas
@@ -28,6 +28,3 @@ class ScreenSimpleData(MDScreen):
                                                     place = 'Thành phố Hồ Chí Minh',
                                                     day = '4-6-2022' ))
     
-    def load_all_kivy_file(self):
-        Builder.load_file('screen_manager/screen_simple_data.kv')
-        Builder.load_file('components/car_card.kv')
