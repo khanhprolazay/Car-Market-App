@@ -92,19 +92,25 @@ class ScreenSimpleData(MDScreen):
                                                     manufacture_year_car = MainApp.data['Nam_san_xuat'][i],
                                                     km_car = MainApp.data['Km_da_di'][i],
                                                     shift_stick_inform_car = MainApp.data['Hop_so'][i],
-                                                    place = 'Thành phố Hồ Chí Minh',
-                                                    day = '4-6-2022' ))
+                                                    place = MainApp.data['Dia_diem'][i],
+                                                    day = MainApp.data['Thoi_gian'][i]))
 
 def GetLink(links):
     link = links.split()[0]
     link = "".join(c for c in link if c != '[' and c != ',' and c != "'")
     return link
 
+def messageBox(title, content):
+    pop = Popup(title=title,
+                content=Label(text=content),
+                size_hint=(None, None), size=(400, 400))
+    pop.open()
+
 class MainApp(MDApp):
     sm = ScreenManager()
-    users = pd.read_csv('data/login.csv')
+    users = pd.read_csv('assets/login.csv')
     df = pd.DataFrame(users)
-    data = pd.read_csv('data/Car_data.csv')
+    data = pd.read_csv('assets/Car_data.csv')
 
     def build(self):
         self.theme_cls.primary_palette = "Blue"
@@ -112,12 +118,6 @@ class MainApp(MDApp):
         self.sm.add_widget(RegisterForm(name='register'))
         self.sm.add_widget(ScreenSimpleData(name='screensimpledata'))
         return self.sm
-
-def messageBox(title, content):
-    pop = Popup(title=title,
-                content=Label(text=content),
-                size_hint=(None, None), size=(400, 400))
-    pop.open()
 
 if __name__ == '__main__':
     Builder.load_file('screen_manager/screen_simple_data.kv')
