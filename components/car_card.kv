@@ -31,7 +31,7 @@
         divider: None
         _no_ripple_effect: True
         size_hint_y: None
-        adaptive_height: True
+        adaptive_width: True
         _txt_left_pad: 30
 
     MDBoxLayout:
@@ -43,12 +43,12 @@
             padding: 30, 0, 0, 0 # [padding_left, padding_top, padding_right, padding_bottom]
             adaptive_height: True
             MyLeftIcon:
-                icon: 'data/tag_icon.png'
+                icon: 'assets/tag_icon.png'
             MyLabel:
                 text: f'Tình trạng xe: {root.status_car}'
 
             MyLeftIcon:
-                icon: 'data/calendar_icon.png'
+                icon: 'assets/calendar_icon.png'
             MyLabel:
                 text: f'Năm sản xuất: {root.manufacture_year_car}'
 
@@ -59,35 +59,31 @@
             adaptive_height: True
 
             MyLeftIcon:
-                icon: 'data/street_icon.png'
+                icon: 'assets/street_icon.png'
             MyLabel:
                 text: f'Số km đã đi: {root.km_car}'
 
             MyLeftIcon:
-                icon: 'data/shift_stick_icon.png'
+                icon: 'assets/shift_stick_icon.png'
             MyLabel:
                 text: f'Hộp số: {root.shift_stick_inform_car}'
     MDBoxLayout:
         orientation: 'horizontal'
         padding: 30, 10, 0, 0
 
-        MyLeftIcon:
-            icon: 'data/location_icon.png'
+        MDIconButton:
+            icon: 'assets/location_icon.png'
             pos_hint: {'y': 0.2}
             padding_right: 10
+            user_font_size: "0.5sp"
 
-        MyLabel:
-            text: root.place
+        MDLabel:
+            text: f'  {root.place} ~ Ngày đăng: {root.day}'
             font_style: 'Overline'
+            theme_text_color: 'Custom'
             text_color: get_color_from_hex('#0000ff')
-            font_size: 10
+            font_size: 11
                 
-        
-        MyLabel:
-            text: f'Ngày đăng: {root.day}'
-            font_style: 'Overline'
-            text_color: get_color_from_hex('#0000ff')
-            font_size: 10
 
 <MyBoxLayout@MDBoxLayout>:
     adaptive_height: True
@@ -98,5 +94,5 @@
 
 <MyLabel@MDLabel>
     adaptive_width: True
-    font_size: 10
+    font_size: 11
     theme_text_color: 'Custom'
