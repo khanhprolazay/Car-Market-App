@@ -1,0 +1,13 @@
+#:import get_color_from_hex kivy.utils.get_color_from_hex
+
+<ListCarScreen>: #<Cusomer>
+    md_bg_color: get_color_from_hex('#000000')
+
+    ScrollView:
+        MDBoxLayout:
+            orientation: 'vertical'
+            adaptive_height: True
+            spacing: 20
+            divider: None
+            id: listitem
+

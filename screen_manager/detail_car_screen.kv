@@ -1,0 +1,123 @@
+#:import get_color_from_hex kivy.utils.get_color_from_hex
+<DetailCarScreen>:
+    MDScreen:
+        #md_bg_color: get_color_from_hex('#000000')
+        MDRectangleFlatIconButton:
+            text:"Like"
+            icon: "cards-heart-outline"
+            line_color:(0.5, 0, 0.5, 1)
+            pos_hint:{"center_x": 0.6, "center_y": 0.85}
+            font_size: 10
+        MDRectangleFlatIconButton:
+            text:"Save"
+            icon: "content-save"
+            line_color:(0.5, 0, 0.5, 1)
+            pos_hint:{"center_x": 0.85, "center_y": 0.85}
+            font_size: 10  
+        MDBoxLayout:
+            orientation: 'horizontal'
+            padding: 20, 0, 0, 465 # [padding_left, padding_top, padding_right, padding_bottom]
+            adaptive_height: True
+
+            MyLeftIcon:
+                icon: 'assets/tag_icon.png'
+            MyLabel:
+                text: f'Tình trạng xe: {root.status_car}'
+            MyLeftIcon:
+                icon: 'assets/icon_Quang_Duong.png'
+            MyLabel:
+                text: f'Số km đã đi: {root.km_car}'
+        MDBoxLayout:
+            orientation: 'horizontal'
+            padding: 20, 0, 0, 430 # [padding_left, padding_top, padding_right, padding_bottom]
+            adaptive_height: True
+            MyLeftIcon:
+                icon: 'assets/shift_stick_icon.png'
+            MyLabel:
+                text: f'Hộp số: {root.shift_stick_inform_car}'
+            MyLeftIcon:
+                icon: 'assets/calendar_icon.png'
+            MyLabel:
+                text: f'Năm sản xuất: {root.manufacture_year_car}'
+        MDBoxLayout:
+            orientation: 'horizontal'
+            padding: 20, 0, 0, 400 # [padding_left, padding_top, padding_right, padding_bottom]
+            adaptive_height: True
+            MyLeftIcon:
+                icon: 'assets/icon_car.png'
+            MyLabel:
+                text: f'Dòng Xe: {root.Dong_xe}'
+            MyLeftIcon:
+                icon: 'assets/icon_nhien_lieeu.png'
+            MyLabel:
+                text: f'Nhiên Liệu: {root.Nhien_Lieu}'
+        MDBoxLayout:
+            orientation: 'horizontal'
+            padding: 20, 0, 0, 370 # [padding_left, padding_top, padding_right, padding_bottom]
+            adaptive_height: True
+            MyLeftIcon:
+                icon: 'assets/Nguoi_Ban.png'
+            MyLabel:
+                text: f'Người Bán: {root.Nguoi_Ban}'
+            MyLeftIcon:
+                icon: 'assets/icon_Dong_co.png'
+            MyLabel:
+                text: f'Dẫn Động: {root.Dan_dong}'
+        MDBoxLayout:
+            orientation: 'horizontal'
+            padding: 20, 0, 0, 340 # [padding_left, padding_top, padding_right, padding_bottom]
+            adaptive_height: True
+
+            MyLeftIcon:
+                icon: 'assets/icon_Mau_xe.png'
+            MyLabel:
+                text: f'Màu Xe: {root.Mau_Xe}'
+            MyLeftIcon:
+                icon: 'assets/icon_vi_tri.png'
+            MyLabel:
+                text: f'Xuất Xứ: {root.Xuat_Xu}'
+
+        MDRoundFlatButton:
+            text: "Back"
+            font_style: "H3"
+            font_size: 12
+            pos_hint: {"center_x": 0.5, 'center_y': 0.05}
+            theme_text_color: 'Custom'
+            text_color: get_color_from_hex('#000000')
+            on_release:
+                root.manager.transition.direction = 'right' 
+                root.manager.current = 'listcarscreen'
+        
+        MDSwiper:
+            size_hint_y: None
+            height: root.height - dp(300)
+            y: root.height - self.height - dp(320)    
+            pos_hint: {"center_x": 0.5, 'center_y': 0.4}    
+            MDSwiperItem:
+                FitImage:
+                    source: root.car_image
+                    size_hint_y:.8
+                    allow_stretch: True
+                    keep_ratio: False
+                    radius: [20,]          
+            MDSwiperItem:
+                FitImage:
+                    source: root.car_image1
+                    size_hint_y:.8
+                    allow_stretch: True
+                    keep_ratio: False  
+                    radius: [20,]       
+            MDSwiperItem:
+                FitImage:
+                    source: root.car_image2
+                    size_hint_y:.8
+                    allow_stretch: True
+                    keep_ratio: False  
+                    radius: [20,]             
+        MDToolbar:
+            id: toolbar
+            title: root.inform_car
+            elevation: 5
+            pos_hint: {"top": 1}
+            user_font_size: "H4"
+              
