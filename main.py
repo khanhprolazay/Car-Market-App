@@ -83,14 +83,17 @@ class CarCard(MDCard):
 
 class ListCarScreen(MDScreen):
     flag = True
-    def on_enter(self):
+    i = 1
+    j = 21
+
+    def on_pre_enter(self):
         if self.flag:
+            Window.size = [300, 600]
             self.list_items()
             self.flag = False
 
     def list_items(self):
-        Window.size = [300, 600]
-        for i in range(101, 120):
+        for i in range(self.i, self.j):
             self.ids.listitem.add_widget(CarCard(   car_image = GetLink(MainApp.data['Link_image'][i]),
                                                     inform_car = MainApp.data['Tieu_de'][i],
                                                     price_car = MainApp.data['gia'][i],
@@ -101,6 +104,20 @@ class ListCarScreen(MDScreen):
                                                     place = MainApp.data['Dia_diem'][i],
                                                     day = MainApp.data['Thoi_gian'][i],
                                                     idx = i))
+
+    def leftArrowIcon(self):
+        if self.i < 21:
+            return
+        self.ids.listitem.clear_widgets()
+        self.i -= 20
+        self.j -= 20
+        self.list_items()
+
+    def rightArrowIcon(self):
+        self.ids.listitem.clear_widgets()
+        self.i += 20
+        self.j += 20
+        self.list_items()
                                                     
 class DetailCarScreen(MDScreen):
     car_image = StringProperty()
@@ -189,3 +206,6 @@ if __name__ == '__main__':
     load_all_kivy_file()
     Window.size = (375, 667)
     MainApp().run()
+
+#arrow-left-circle-outline
+#arrow-right-circle-outline

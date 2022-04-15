@@ -3,11 +3,29 @@
 <ListCarScreen>: #<Cusomer>
     md_bg_color: get_color_from_hex('#000000')
 
-    ScrollView:
+    MDBoxLayout:
+        orientation: 'vertical'
+        ScrollView:
+            MDBoxLayout:
+                orientation: 'vertical'
+                adaptive_height: True
+                spacing: 20
+                divider: None
+                id: listitem
         MDBoxLayout:
-            orientation: 'vertical'
             adaptive_height: True
-            spacing: 20
-            divider: None
-            id: listitem
+            spacing: 10
+            padding: 95, 0, 0, 0
+            md_bg_color: get_color_from_hex('#FFFFFF')
+            
+            MDIconButton:
+                icon: 'arrow-left-circle'
+                user_font_size: "25sp"
+                on_release:
+                    root.leftArrowIcon()
+            MDIconButton:
+                icon: 'arrow-right-circle'
+                user_font_size: "25sp"
+                on_release:
+                    root.rightArrowIcon()
 
