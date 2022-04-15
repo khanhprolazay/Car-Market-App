@@ -82,8 +82,11 @@ class CarCard(MDCard):
         MainApp.sm.current = 'detailcarscreen'
 
 class ListCarScreen(MDScreen):
-    def on_pre_enter(self):
-        self.list_items()
+    flag = True
+    def on_enter(self):
+        if self.flag:
+            self.list_items()
+            self.flag = False
 
     def list_items(self):
         Window.size = [300, 600]
@@ -119,7 +122,7 @@ class DetailCarScreen(MDScreen):
     place = StringProperty()
     day = StringProperty()
 
-    def on_pre_enter(self):
+    def on_enter(self):
         Window.size = [300, 600]
         self.car_image = GetLink(MainApp.data['Link_image'][MainApp.idx])
         self.car_image1 = GetLink1(MainApp.data['Link_image'][MainApp.idx])
