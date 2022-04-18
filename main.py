@@ -10,6 +10,7 @@ from kivy.uix.label import Label
 from kivymd.uix.card import MDCard
 import pandas as pd
 from kivymd.uix.screen import MDScreen
+from kivy.clock import Clock
 
 class LoginForm(Screen):
     email = ObjectProperty(None)
@@ -81,6 +82,18 @@ class CarCard(MDCard):
         MainApp.sm.transition.direction = 'left'
         MainApp.sm.current = 'detailcarscreen'
 
+    def settingCard(self, car_image, inform_car, price_car, status_car, manufacture_year_car, km_car, shift_stick_inform_car, place, day, idx):
+        self.car_image = car_image
+        self.inform_car = inform_car
+        self.price_car = price_car
+        self.status_car = status_car
+        self.manufacture_year_car = manufacture_year_car
+        self.km_car = km_car
+        self.shift_stick_inform_car = shift_stick_inform_car
+        self.place = place
+        self.day = day
+        self.idx = idx
+
 class ListCarScreen(MDScreen):
     flag = True
     i = 1
@@ -89,10 +102,9 @@ class ListCarScreen(MDScreen):
     def on_pre_enter(self):
         if self.flag:
             Window.size = [300, 600]
-            self.list_items()
-            self.flag = False
+            self.clock = Clock.schedule_once(self.list_items, 0.5)
 
-    def list_items(self):
+    def list_items(self, *args):
         for i in range(self.i, self.j):
             self.ids.listitem.add_widget(CarCard(   car_image = GetLink(MainApp.data['Link_image'][i]),
                                                     inform_car = MainApp.data['Tieu_de'][i],
@@ -104,20 +116,24 @@ class ListCarScreen(MDScreen):
                                                     place = MainApp.data['Dia_diem'][i],
                                                     day = MainApp.data['Thoi_gian'][i],
                                                     idx = i))
+        self.flag = False
+
+    def update_list_item(self, *args):
+        self.flag = True
+        self.ids.listitem.clear_widgets()
+        self.list_items()
 
     def leftArrowIcon(self):
         if self.i < 21:
             return
-        self.ids.listitem.clear_widgets()
         self.i -= 20
         self.j -= 20
-        self.list_items()
+        self.clock = Clock.schedule_once(self.update_list_item, 0.5)
 
     def rightArrowIcon(self):
-        self.ids.listitem.clear_widgets()
         self.i += 20
         self.j += 20
-        self.list_items()
+        self.clock = Clock.schedule_once(self.update_list_item, 0.5)
                                                     
 class DetailCarScreen(MDScreen):
     car_image = StringProperty()
@@ -198,14 +214,11 @@ class MainApp(MDApp):
         self.theme_cls.primary_palette = "Blue"
         self.sm.add_widget(LoginForm(name='login'))
         self.sm.add_widget(RegisterForm(name='register'))
-        self.sm.add_widget(ListCarScreen(name='listcarscreen'))
         self.sm.add_widget(DetailCarScreen(name = 'detailcarscreen'))
+        self.sm.add_widget(ListCarScreen(name='listcarscreen'))
         return self.sm
 
 if __name__ == '__main__':
     load_all_kivy_file()
     Window.size = (375, 667)
     MainApp().run()
-
-#arrow-left-circle-outline
-#arrow-right-circle-outline
