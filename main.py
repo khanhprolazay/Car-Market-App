@@ -11,6 +11,8 @@ from kivymd.uix.card import MDCard
 import pandas as pd
 from kivymd.uix.screen import MDScreen
 from kivy.clock import Clock
+import sqlite3
+from sqlite3 import Error
 
 class LoginForm(Screen):
     email = ObjectProperty(None)
@@ -96,26 +98,27 @@ class CarCard(MDCard):
 
 class ListCarScreen(MDScreen):
     flag = True
-    i = 1
-    j = 21
 
     def on_pre_enter(self):
         if self.flag:
             Window.size = [300, 600]
-            self.clock = Clock.schedule_once(self.list_items, 0.5)
+            self.rightArrowIcon()
 
     def list_items(self, *args):
-        for i in range(self.i, self.j):
-            self.ids.listitem.add_widget(CarCard(   car_image = GetLink(MainApp.data['Link_image'][i]),
-                                                    inform_car = MainApp.data['Tieu_de'][i],
-                                                    price_car = MainApp.data['gia'][i],
-                                                    status_car = MainApp.data['Tinh_trang'][i],
-                                                    manufacture_year_car = MainApp.data['Nam_san_xuat'][i],
-                                                    km_car = MainApp.data['Km_da_di'][i],
-                                                    shift_stick_inform_car = MainApp.data['Hop_so'][i],
-                                                    place = MainApp.data['Dia_diem'][i],
-                                                    day = MainApp.data['Thoi_gian'][i],
+        limit = MainApp.idx + 20
+
+        for i in range(MainApp.idx, limit):
+            self.ids.listitem.add_widget(CarCard(   car_image = GetLink(MainApp.data[i][12]),
+                                                    inform_car = MainApp.data[i][0],
+                                                    price_car = MainApp.data[i][1],
+                                                    status_car = MainApp.data[i][2],
+                                                    manufacture_year_car = MainApp.data[i][8],
+                                                    km_car = MainApp.data[i][4],
+                                                    shift_stick_inform_car = MainApp.data[i][5],
+                                                    place = MainApp.data[i][14],
+                                                    day = MainApp.data[i][15],
                                                     idx = i))
+  
         self.flag = False
 
     def update_list_item(self, *args):
@@ -124,15 +127,14 @@ class ListCarScreen(MDScreen):
         self.list_items()
 
     def leftArrowIcon(self):
-        if self.i < 21:
+        temp = MainApp.idx - 20
+        if temp < 0:
             return
-        self.i -= 20
-        self.j -= 20
+        MainApp.idx -= 20
         self.clock = Clock.schedule_once(self.update_list_item, 0.5)
 
     def rightArrowIcon(self):
-        self.i += 20
-        self.j += 20
+        MainApp.idx += 20
         self.clock = Clock.schedule_once(self.update_list_item, 0.5)
                                                     
 class DetailCarScreen(MDScreen):
@@ -155,26 +157,26 @@ class DetailCarScreen(MDScreen):
     place = StringProperty()
     day = StringProperty()
 
-    def on_enter(self):
+    def on_pre_enter(self):
         Window.size = [300, 600]
-        self.car_image = GetLink(MainApp.data['Link_image'][MainApp.idx])
-        self.car_image1 = GetLink1(MainApp.data['Link_image'][MainApp.idx])
-        self.car_image2 = GetLink2(MainApp.data['Link_image'][MainApp.idx])
-        self.inform_car = MainApp.data['Tieu_de'][MainApp.idx]
-        self.price_car = MainApp.data['gia'][MainApp.idx]
-        self.status_car = MainApp.data['Tinh_trang'][MainApp.idx]
-        self.manufacture_year_car = MainApp.data['Nam_san_xuat'][MainApp.idx]
-        self.km_car = MainApp.data['Km_da_di'][MainApp.idx]
-        self.shift_stick_inform_car = MainApp.data['Hop_so'][MainApp.idx]
-        self.Dong_xe = MainApp.data['Dong_xe'][MainApp.idx]
-        self.Nhien_Lieu = MainApp.data['Nhien_lieu'][MainApp.idx]
-        self.Nguoi_Ban = MainApp.data['Nguoi_ban'][MainApp.idx]
-        self.Dan_dong= MainApp.data['Dan_dong'][MainApp.idx]
-        self.Mau_Xe = MainApp.data['Mau_xe'][MainApp.idx]
-        self.Xuat_Xu = MainApp.data['Xuat_xu'][MainApp.idx]
-        self.Mo_Ta = MainApp.data['Mo_ta'][MainApp.idx].strip("[] '")
-        self.place = MainApp.data['Dia_diem'][MainApp.idx]
-        self.day = MainApp.data['Thoi_gian'][MainApp.idx]
+        self.car_image = GetLink(MainApp.data[MainApp.idx][12])
+        self.car_image1 = GetLink1(MainApp.data[MainApp.idx][12])
+        self.car_image2 = GetLink2(MainApp.data[MainApp.idx][12])
+        self.inform_car = MainApp.data[MainApp.idx][0]
+        self.price_car = MainApp.data[MainApp.idx][1]
+        self.status_car = MainApp.data[MainApp.idx][2]
+        self.manufacture_year_car = MainApp.data[MainApp.idx][8]
+        self.km_car = MainApp.data[MainApp.idx][4]
+        self.shift_stick_inform_car = MainApp.data[MainApp.idx][5]
+        self.Dong_xe = MainApp.data[MainApp.idx][3]
+        self.Nhien_Lieu = MainApp.data[MainApp.idx][6]
+        self.Nguoi_Ban = MainApp.data[MainApp.idx][7]
+        self.Dan_dong= MainApp.data[MainApp.idx][9]
+        self.Mau_Xe = MainApp.data[MainApp.idx][10]
+        self.Xuat_Xu = MainApp.data[MainApp.idx][11]
+        self.Mo_Ta = MainApp.data[MainApp.idx][13].strip("[] '")
+        self.place = MainApp.data[MainApp.idx][14]
+        self.day = MainApp.data[MainApp.idx][15]
 
 def GetLink(links):
     link = links.split()[0]
@@ -203,19 +205,35 @@ def load_all_kivy_file():
     Builder.load_file('screen_manager/login_screen.kv')
     Builder.load_file('screen_manager/detail_car_screen.kv')
 
+def select_all_car(conn):
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM Car_data")
+    rows = cur.fetchall()
+    return rows
+
+def create_connection(db_file):
+    conn = None
+    try:
+        conn = sqlite3.connect(db_file)
+    except Error as e:
+        print(e)
+    return conn
+
 class MainApp(MDApp):
     sm = ScreenManager()
     users = pd.read_csv('assets/login.csv')
     df = pd.DataFrame(users)
-    data = pd.read_csv('assets/Car_data.csv')
-    idx = 3
+    database = "assets/database.sqlite"
+    conn = create_connection(database)
+    data = select_all_car(conn)
+    idx = -20
 
     def build(self):
         self.theme_cls.primary_palette = "Blue"
         self.sm.add_widget(LoginForm(name='login'))
         self.sm.add_widget(RegisterForm(name='register'))
-        self.sm.add_widget(DetailCarScreen(name = 'detailcarscreen'))
         self.sm.add_widget(ListCarScreen(name='listcarscreen'))
+        self.sm.add_widget(DetailCarScreen(name = 'detailcarscreen'))
         return self.sm
 
 if __name__ == '__main__':
