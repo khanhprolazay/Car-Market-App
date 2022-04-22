@@ -76,7 +76,7 @@
                 icon: 'assets/icon_vi_tri.png'
             MyLabel:
                 text: f'Xuất Xứ: {root.Xuat_Xu}'
-
+        
         MDRoundFlatButton:
             text: "Back"
             font_style: "H3"
@@ -96,24 +96,43 @@
             MDSwiperItem:
                 FitImage:
                     source: root.car_image
-                    size_hint_y:.8
+                    size_hint_y: 0.5
+                    size_hint_x: 2
                     allow_stretch: True
                     keep_ratio: False
                     radius: [20,]          
             MDSwiperItem:
                 FitImage:
                     source: root.car_image1
-                    size_hint_y:.8
+                    size_hint_y: 0.5
+                    size_hint_x: 2
                     allow_stretch: True
                     keep_ratio: False  
                     radius: [20,]       
             MDSwiperItem:
                 FitImage:
                     source: root.car_image2
-                    size_hint_y:.8
+                    size_hint_y: 0.5
+                    size_hint_x: 2
                     allow_stretch: True
                     keep_ratio: False  
-                    radius: [20,]             
+                    radius: [20,]         
+            MDSwiperItem:
+                FitImage:
+                    source: root.car_image3
+                    size_hint_y: 0.5
+                    size_hint_x: 2
+                    allow_stretch: True
+                    keep_ratio: False  
+                    radius: [20,]    
+            MDSwiperItem:
+                FitImage:
+                    source: root.car_image4
+                    size_hint_y: 0.5
+                    size_hint_x: 2
+                    allow_stretch: True
+                    keep_ratio: False  
+                    radius: [20,]
         MDToolbar:
             id: toolbar
             title: root.inform_car
