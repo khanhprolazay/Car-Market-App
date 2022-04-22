@@ -11,8 +11,7 @@ from kivymd.uix.card import MDCard
 import pandas as pd
 from kivymd.uix.screen import MDScreen
 from kivy.clock import Clock
-import sqlite3
-from sqlite3 import Error
+import dataconn
 
 class LoginForm(Screen):
     email = ObjectProperty(None)
@@ -108,7 +107,7 @@ class ListCarScreen(MDScreen):
         limit = MainApp.idx + 20
 
         for i in range(MainApp.idx, limit):
-            self.ids.listitem.add_widget(CarCard(   car_image = GetLink(MainApp.data[i][12]),
+            self.ids.listitem.add_widget(CarCard(   car_image = GetLink(MainApp.data[i][12], 0),
                                                     inform_car = MainApp.data[i][0],
                                                     price_car = MainApp.data[i][1],
                                                     status_car = MainApp.data[i][2],
@@ -141,6 +140,8 @@ class DetailCarScreen(MDScreen):
     car_image = StringProperty()
     car_image1 = StringProperty()
     car_image2 = StringProperty()
+    car_image3 = StringProperty()
+    car_image4 = StringProperty()
     inform_car = StringProperty()
     price_car = StringProperty()
     status_car = StringProperty()
@@ -159,9 +160,11 @@ class DetailCarScreen(MDScreen):
 
     def on_pre_enter(self):
         Window.size = [300, 600]
-        self.car_image = GetLink(MainApp.data[MainApp.idx][12])
-        self.car_image1 = GetLink1(MainApp.data[MainApp.idx][12])
-        self.car_image2 = GetLink2(MainApp.data[MainApp.idx][12])
+        self.car_image = GetLink(MainApp.data[MainApp.idx][12], 0)
+        self.car_image1 = GetLink(MainApp.data[MainApp.idx][12], 1)
+        self.car_image2 = GetLink(MainApp.data[MainApp.idx][12], 2)
+        self.car_image3 = GetLink(MainApp.data[MainApp.idx][12], 3)
+        self.car_image4 = GetLink(MainApp.data[MainApp.idx][12], 4)
         self.inform_car = MainApp.data[MainApp.idx][0]
         self.price_car = MainApp.data[MainApp.idx][1]
         self.status_car = MainApp.data[MainApp.idx][2]
@@ -178,20 +181,13 @@ class DetailCarScreen(MDScreen):
         self.place = MainApp.data[MainApp.idx][14]
         self.day = MainApp.data[MainApp.idx][15]
 
-def GetLink(links):
-    link = links.split()[0]
-    link = "".join(c for c in link if c != '[' and c != ',' and c != "'")
-    return link
-
-def GetLink1(links):
-    link = links.split()[1]
-    link = "".join(c for c in link if c != '[' and c != ',' and c != "'")
-    return link
-
-def GetLink2(links):
-    link = links.split()[2]
-    link = "".join(c for c in link if c != '[' and c != ',' and c != "'")
-    return link
+def GetLink(links, pos):
+    try:
+        link = links.split()[pos]
+        link = "".join(c for c in link if c != '[' and c != ',' and c != "'" and c != ']')
+        return link
+    except:
+        return ""
 
 def messageBox(title, content):
     pop = Popup(title=title,
@@ -205,27 +201,11 @@ def load_all_kivy_file():
     Builder.load_file('screen_manager/login_screen.kv')
     Builder.load_file('screen_manager/detail_car_screen.kv')
 
-def select_all_car(conn):
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM Car_data")
-    rows = cur.fetchall()
-    return rows
-
-def create_connection(db_file):
-    conn = None
-    try:
-        conn = sqlite3.connect(db_file)
-    except Error as e:
-        print(e)
-    return conn
-
 class MainApp(MDApp):
     sm = ScreenManager()
     users = pd.read_csv('assets/login.csv')
     df = pd.DataFrame(users)
-    database = "assets/database.sqlite"
-    conn = create_connection(database)
-    data = select_all_car(conn)
+    data = dataconn.select_all_table("assets/database.sqlite", "Car_data")
     idx = -20
 
     def build(self):
@@ -239,4 +219,5 @@ class MainApp(MDApp):
 if __name__ == '__main__':
     load_all_kivy_file()
     Window.size = (375, 667)
+
     MainApp().run()
