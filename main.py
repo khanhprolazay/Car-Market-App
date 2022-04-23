@@ -11,6 +11,7 @@ from kivymd.uix.card import MDCard
 import pandas as pd
 from kivymd.uix.screen import MDScreen
 from kivy.clock import Clock
+import components.circular_avatar_image
 import dataconn
 
 class LoginForm(Screen):
@@ -135,6 +136,10 @@ class ListCarScreen(MDScreen):
     def rightArrowIcon(self):
         MainApp.idx += 20
         self.clock = Clock.schedule_once(self.update_list_item, 0.5)
+
+    def toProfileForm(self):
+        MainApp.sm.transition.direction = 'left'
+        MainApp.sm.current = 'profile'
                                                     
 class DetailCarScreen(MDScreen):
     car_image = StringProperty()
@@ -181,6 +186,26 @@ class DetailCarScreen(MDScreen):
         self.place = MainApp.data[MainApp.idx][14]
         self.day = MainApp.data[MainApp.idx][15]
 
+class ProfileScreen(MDScreen):
+    profile_picture = 'assets/profile_picture.png'
+
+    def on_pre_enter(self):
+        self.list_items()
+
+    def list_items(self):
+        Window.size = [300, 600]
+        for i in range(1, 4):
+            self.ids.listitem.add_widget(CarCard(   car_image = GetLink(MainApp.data[i][12], 0),
+                                                    inform_car = MainApp.data[i][0],
+                                                    price_car = MainApp.data[i][1],
+                                                    status_car = MainApp.data[i][2],
+                                                    manufacture_year_car = MainApp.data[i][8],
+                                                    km_car = MainApp.data[i][4],
+                                                    shift_stick_inform_car = MainApp.data[i][5],
+                                                    place = MainApp.data[i][14],
+                                                    day = MainApp.data[i][15],
+                                                    idx = i))
+
 def GetLink(links, pos):
     try:
         link = links.split()[pos]
@@ -200,6 +225,8 @@ def load_all_kivy_file():
     Builder.load_file('components/car_card.kv')
     Builder.load_file('screen_manager/login_screen.kv')
     Builder.load_file('screen_manager/detail_car_screen.kv')
+    Builder.load_file('screen_manager/profile_screen.kv')
+    Builder.load_file('components/circular_avatar_image.kv')
 
 class MainApp(MDApp):
     sm = ScreenManager()
@@ -210,10 +237,12 @@ class MainApp(MDApp):
 
     def build(self):
         self.theme_cls.primary_palette = "Blue"
+        self.sm.add_widget(ProfileScreen(name = 'profile'))
+        self.sm.add_widget(ListCarScreen(name='listcarscreen'))
         self.sm.add_widget(LoginForm(name='login'))
         self.sm.add_widget(RegisterForm(name='register'))
-        self.sm.add_widget(ListCarScreen(name='listcarscreen'))
         self.sm.add_widget(DetailCarScreen(name = 'detailcarscreen'))
+        #self.sm.add_widget(ProfileScreen(name = 'profile'))
         return self.sm
 
 if __name__ == '__main__':

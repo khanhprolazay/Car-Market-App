@@ -16,7 +16,7 @@
             adaptive_height: True
             spacing: 10
             padding: 95, 0, 0, 0
-            md_bg_color: get_color_from_hex('#FFFFFF')
+            md_bg_color: get_color_from_hex("#FFFFFF")
             
             MDIconButton:
                 icon: 'arrow-left-circle'
@@ -28,4 +28,18 @@
                 user_font_size: "25sp"
                 on_release:
                     root.rightArrowIcon()
+            MDCard:
+                size_hint: None, None
+                size: 35, 35
+                radius: [25, 25]
+                pos_hint: {"center_x": 0.5,"center_y": 0.5}
+                ripple_behavior: True
+                focus_behavior: True
+                on_release: root.toProfileForm()
+                FitImage:
+                    source: "assets/profile_picture.png"
+                    size: 35, 35
+                    radius: [25, 25]
+
+
 
