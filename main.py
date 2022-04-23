@@ -205,6 +205,10 @@ class ProfileScreen(MDScreen):
                                                     place = MainApp.data[i][14],
                                                     day = MainApp.data[i][15],
                                                     idx = i))
+    def toFormListCar(self):
+        MainApp.sm.transition.direction = 'left'
+        MainApp.sm.current = 'listcarscreen'
+    
 
 def GetLink(links, pos):
     try:
@@ -237,12 +241,11 @@ class MainApp(MDApp):
 
     def build(self):
         self.theme_cls.primary_palette = "Blue"
-        self.sm.add_widget(ProfileScreen(name = 'profile'))
-        self.sm.add_widget(ListCarScreen(name='listcarscreen'))
         self.sm.add_widget(LoginForm(name='login'))
         self.sm.add_widget(RegisterForm(name='register'))
+        self.sm.add_widget(ListCarScreen(name='listcarscreen'))
         self.sm.add_widget(DetailCarScreen(name = 'detailcarscreen'))
-        #self.sm.add_widget(ProfileScreen(name = 'profile'))
+        self.sm.add_widget(ProfileScreen(name = 'profile'))
         return self.sm
 
 if __name__ == '__main__':

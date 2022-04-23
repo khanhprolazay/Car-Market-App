@@ -1,0 +1,32 @@
+<CircularAvatarImage>:
+
+    size_hint: None, None
+    size: 62, 100
+    elevation: 0
+
+    MDRelativeLayout:
+        size_hint: None, None
+        size: 80, 100
+
+        Circle:
+            radius: [50,]
+            size: 75, 75
+            md_bg_color: get_color_from_hex('#000000')
+        
+        Circle:
+            radius: [50,]
+            size: 70, 70
+            md_bg_color: 1, 1, 1, 1
+
+        FitImage:
+            source: root.avatar 
+            size_hint: None, None
+            size: 68, 68
+            radius: [68]
+            pos_hint: {"center_x": 0.5,"center_y": 0.6}
+    
+
+<Circle@MDCard>
+    size_hint: None, None
+    elevation: 0
+    pos_hint: {"center_x": 0.5,"center_y": 0.6}
