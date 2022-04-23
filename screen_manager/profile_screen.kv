@@ -36,7 +36,17 @@
                 icon: "history"
             MDIconButton:
                 icon: "arrow-left-bold-outline"
-                on_release: root.toFormListCar()
+                on_release: 
+                    root.toFormListCar()
+            
+            Widget:
+
+            MDIconButton:
+                icon: 'logout'
+                on_release:
+                    root.manager.transition.direction = "right"
+                    root.manager.current = 'login'
+
 
         MDBoxLayout:
             md_bg_color: get_color_from_hex('#000000')

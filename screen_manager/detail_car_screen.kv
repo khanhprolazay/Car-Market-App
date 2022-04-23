@@ -85,8 +85,7 @@
             theme_text_color: 'Custom'
             text_color: get_color_from_hex('#000000')
             on_release:
-                root.manager.transition.direction = 'right' 
-                root.manager.current = 'listcarscreen'
+                root.changeScreen()
         
         MDSwiper:
             size_hint_y: None

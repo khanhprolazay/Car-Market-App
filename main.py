@@ -80,6 +80,10 @@ class CarCard(MDCard):
     idx = NumericProperty()
 
     def toFormDetailProduct(self):
+        if MainApp.sm.current == 'listcarscreen':
+            MainApp.toListScreen = True
+        else:
+            MainApp.toListScreen = False
         MainApp.idx = self.idx
         MainApp.sm.transition.direction = 'left'
         MainApp.sm.current = 'detailcarscreen'
@@ -186,13 +190,23 @@ class DetailCarScreen(MDScreen):
         self.place = MainApp.data[MainApp.idx][14]
         self.day = MainApp.data[MainApp.idx][15]
 
+    def changeScreen(self):
+        if MainApp.toListScreen:
+            MainApp.sm.transition.direction = 'right'
+            MainApp.sm.current = "listcarscreen"
+        else:
+            MainApp.sm.transition.direction = 'right'
+            MainApp.sm.current = "profile"
+
 class ProfileScreen(MDScreen):
     profile_picture = 'assets/profile_picture.png'
+    flag = True
 
     def on_pre_enter(self):
-        self.list_items()
+        if self.flag:
+            self.clock = Clock.schedule_once(self.list_items, 0.5)
 
-    def list_items(self):
+    def list_items(self, *args):
         Window.size = [300, 600]
         for i in range(1, 4):
             self.ids.listitem.add_widget(CarCard(   car_image = GetLink(MainApp.data[i][12], 0),
@@ -205,11 +219,14 @@ class ProfileScreen(MDScreen):
                                                     place = MainApp.data[i][14],
                                                     day = MainApp.data[i][15],
                                                     idx = i))
-    def toFormListCar(self):
-        MainApp.sm.transition.direction = 'left'
-        MainApp.sm.current = 'listcarscreen'
-    
+        self.flag = False
 
+    def toFormListCar(self):
+        MainApp.sm.transition.direction = 'right'
+        MainApp.sm.current = 'listcarscreen'
+        self.ids.listitem.clear_widgets()
+        self.flag = True
+    
 def GetLink(links, pos):
     try:
         link = links.split()[pos]
@@ -238,14 +255,15 @@ class MainApp(MDApp):
     df = pd.DataFrame(users)
     data = dataconn.select_all_table("assets/database.sqlite", "Car_data")
     idx = -20
+    toListScreen = None
 
     def build(self):
         self.theme_cls.primary_palette = "Blue"
         self.sm.add_widget(LoginForm(name='login'))
-        self.sm.add_widget(RegisterForm(name='register'))
         self.sm.add_widget(ListCarScreen(name='listcarscreen'))
-        self.sm.add_widget(DetailCarScreen(name = 'detailcarscreen'))
+        self.sm.add_widget(RegisterForm(name='register'))
         self.sm.add_widget(ProfileScreen(name = 'profile'))
+        self.sm.add_widget(DetailCarScreen(name = 'detailcarscreen'))
         return self.sm
 
 if __name__ == '__main__':
