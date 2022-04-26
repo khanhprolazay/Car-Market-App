@@ -1,4 +1,5 @@
 from os import link
+from tokenize import String
 from unicodedata import name
 from kivy.lang import Builder
 from kivymd.app import MDApp
@@ -203,16 +204,12 @@ class ProfileScreen(MDScreen):
     def on_pre_enter(self):
         if self.flag:
             Window.size = [300, 600]
+            self.ids.listitem.add_widget(ProfileCard())
             self.ids.listitem.add_widget(components.fit_image.Fit_Image())
-
-    def toFormListCar(self):
-        MainApp.sm.transition.direction = 'right'
-        MainApp.sm.current = 'listcarscreen'
-        self.ids.listitem.clear_widgets()
-        self.flag = True
 
     def update_list_item(self, data):
         self.ids.listitem.clear_widgets()
+        self.ids.listitem.add_widget(ProfileCard())
         for i in data:
             self.ids.listitem.add_widget(CarCard(   car_image = GetLink(i[12], 0),
                                                     inform_car = i[0],
@@ -225,7 +222,23 @@ class ProfileScreen(MDScreen):
                                                     day = i[15],
                                                     idx = int(i[16])))
             self.flag = False
+    
+    def toFormListCar(self):
+        MainApp.sm.transition.direction = 'right'
+        MainApp.sm.current = 'listcarscreen'
+        self.ids.listitem.clear_widgets()
+        self.flag = True
 
+class ProfileCard(MDCard):
+    id = StringProperty()
+
+    def toFormListCar(self):
+        MainApp.sm.get_screen("profile").toFormListCar()
+
+    def toFormLogin(self):
+        MainApp.sm.transition.direction = 'right'
+        MainApp.sm.current = 'login'
+    
     def likeIcon(self):
         self.clock = Clock.schedule_once(self.Like, 0.5)
 
@@ -234,12 +247,12 @@ class ProfileScreen(MDScreen):
 
     def Like(self, *args):
         data = dataconn.select_item_from_like(MainApp.conn, MainApp.username)
-        self.update_list_item(data)
+        MainApp.sm.get_screen("profile").update_list_item(data)
 
     def History(self, *args):
         data = dataconn.select_item_from_history(MainApp.conn, MainApp.username)
-        self.update_list_item(data)
-             
+        MainApp.sm.get_screen("profile").update_list_item(data)
+
 def GetLink(links, pos):
     try:
         link = links.split()[pos]
@@ -262,6 +275,7 @@ def load_all_kivy_file():
     Builder.load_file('screen_manager/profile_screen.kv')
     Builder.load_file('components/circular_avatar_image.kv')
     Builder.load_file('components/fit_image.kv')
+    Builder.load_file('components/profile_card.kv')
 
 class MainApp(MDApp):
     sm = ScreenManager()
@@ -281,6 +295,7 @@ class MainApp(MDApp):
         self.sm.add_widget(DetailCarScreen(name = 'detailcarscreen'))
         self.sm.add_widget(ProfileScreen(name = 'profile'))
         return self.sm
+
 
 if __name__ == '__main__':
     load_all_kivy_file()

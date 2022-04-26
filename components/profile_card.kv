@@ -1,0 +1,55 @@
+<ProfileCard>:
+    orientation: 'vertical'
+    size_hint_y: None
+    height: '120dp'
+    divider: None
+    id: root.id
+    MDBoxLayout:
+        orientation: 'vertical'
+
+        MDBoxLayout:
+            size_hint: None, None
+            size: 300, 80
+
+            CircularAvatarImage: 
+                avatar: 'assets/profile_picture.png'
+                adaptive_height: True
+                pos_hint: {"top":0.9}
+
+            MDBoxLayout: 
+                orientation: 'vertical'
+                padding: 35, 0, 0, 15  #left, top, right, bottom
+                MDLabel:
+                    text: "Lê Minh"
+                    font_style: "H5"
+                    adaptive_height: True
+                MDLabel:
+                    text: "khanhprolazay@gmail.com"
+                    font_style: "H5"
+                    font_size: 10
+                    adaptive_height: True
+
+        MDBoxLayout:
+            padding: 5, 0, 0, 0
+            spacing: 2
+            adaptive_height: True
+            MDIconButton:
+                icon: "heart-outline"          
+                on_release: 
+                    root.Like()        
+            MDIconButton:
+                icon: "history"
+                on_release:
+                    root.History()
+            MDIconButton:
+                icon: "arrow-left-bold-outline"
+                on_release: 
+                    root.toFormListCar()
+            
+            Widget:
+
+            MDIconButton:
+                icon: 'logout'
+                on_release:
+                    root.flag = False
+                    root.toFormLogin()
