@@ -1,3 +1,4 @@
+from os import link
 from unicodedata import name
 from kivy.lang import Builder
 from kivymd.app import MDApp
@@ -8,9 +9,13 @@ from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivymd.uix.card import MDCard
+from kivy.uix.image import Image
+from kivymd.utils.fitimage import FitImage
+from numpy import source
 import pandas as pd
 from kivymd.uix.screen import MDScreen
 from kivy.clock import Clock
+import components.fit_image
 import components.circular_avatar_image
 import dataconn
 
@@ -21,6 +26,7 @@ class LoginForm(Screen):
     def validate(self):
         if self.checkLogin(self.email.text, self.password.text):
             MainApp.sm.current = "listcarscreen"
+            MainApp.username = dataconn.select_username(MainApp.conn, self.email.text)
             self.reset()
         else:
             messageBox('Warning!', 'Incorrect Username or Password')
@@ -88,18 +94,6 @@ class CarCard(MDCard):
         MainApp.sm.transition.direction = 'left'
         MainApp.sm.current = 'detailcarscreen'
 
-    def settingCard(self, car_image, inform_car, price_car, status_car, manufacture_year_car, km_car, shift_stick_inform_car, place, day, idx):
-        self.car_image = car_image
-        self.inform_car = inform_car
-        self.price_car = price_car
-        self.status_car = status_car
-        self.manufacture_year_car = manufacture_year_car
-        self.km_car = km_car
-        self.shift_stick_inform_car = shift_stick_inform_car
-        self.place = place
-        self.day = day
-        self.idx = idx
-
 class ListCarScreen(MDScreen):
     flag = True
 
@@ -109,19 +103,20 @@ class ListCarScreen(MDScreen):
             self.rightArrowIcon()
 
     def list_items(self, *args):
-        limit = MainApp.idx + 20
+        limit = MainApp.flag + 20
+        data = dataconn.select_20_item_from_table(MainApp.conn, "Car_data", MainApp.flag)
 
-        for i in range(MainApp.idx, limit):
-            self.ids.listitem.add_widget(CarCard(   car_image = GetLink(MainApp.data[i][12], 0),
-                                                    inform_car = MainApp.data[i][0],
-                                                    price_car = MainApp.data[i][1],
-                                                    status_car = MainApp.data[i][2],
-                                                    manufacture_year_car = MainApp.data[i][8],
-                                                    km_car = MainApp.data[i][4],
-                                                    shift_stick_inform_car = MainApp.data[i][5],
-                                                    place = MainApp.data[i][14],
-                                                    day = MainApp.data[i][15],
-                                                    idx = i))
+        for i in data:
+            self.ids.listitem.add_widget(CarCard(   car_image = GetLink(i[12], 0),
+                                                    inform_car = i[0],
+                                                    price_car = i[1],
+                                                    status_car = i[2],
+                                                    manufacture_year_car = i[8],
+                                                    km_car = i[4],
+                                                    shift_stick_inform_car = i[5],
+                                                    place = i[14],
+                                                    day = i[15],
+                                                    idx = int(i[16])))
   
         self.flag = False
 
@@ -131,14 +126,14 @@ class ListCarScreen(MDScreen):
         self.list_items()
 
     def leftArrowIcon(self):
-        temp = MainApp.idx - 20
+        temp = MainApp.flag - 20
         if temp < 0:
             return
-        MainApp.idx -= 20
+        MainApp.flag -= 20
         self.clock = Clock.schedule_once(self.update_list_item, 0.5)
 
     def rightArrowIcon(self):
-        MainApp.idx += 20
+        MainApp.flag += 20
         self.clock = Clock.schedule_once(self.update_list_item, 0.5)
 
     def toProfileForm(self):
@@ -169,26 +164,29 @@ class DetailCarScreen(MDScreen):
 
     def on_pre_enter(self):
         Window.size = [300, 600]
-        self.car_image = GetLink(MainApp.data[MainApp.idx][12], 0)
-        self.car_image1 = GetLink(MainApp.data[MainApp.idx][12], 1)
-        self.car_image2 = GetLink(MainApp.data[MainApp.idx][12], 2)
-        self.car_image3 = GetLink(MainApp.data[MainApp.idx][12], 3)
-        self.car_image4 = GetLink(MainApp.data[MainApp.idx][12], 4)
-        self.inform_car = MainApp.data[MainApp.idx][0]
-        self.price_car = MainApp.data[MainApp.idx][1]
-        self.status_car = MainApp.data[MainApp.idx][2]
-        self.manufacture_year_car = MainApp.data[MainApp.idx][8]
-        self.km_car = MainApp.data[MainApp.idx][4]
-        self.shift_stick_inform_car = MainApp.data[MainApp.idx][5]
-        self.Dong_xe = MainApp.data[MainApp.idx][3]
-        self.Nhien_Lieu = MainApp.data[MainApp.idx][6]
-        self.Nguoi_Ban = MainApp.data[MainApp.idx][7]
-        self.Dan_dong= MainApp.data[MainApp.idx][9]
-        self.Mau_Xe = MainApp.data[MainApp.idx][10]
-        self.Xuat_Xu = MainApp.data[MainApp.idx][11]
-        self.Mo_Ta = MainApp.data[MainApp.idx][13].strip("[] '")
-        self.place = MainApp.data[MainApp.idx][14]
-        self.day = MainApp.data[MainApp.idx][15]
+
+        data = dataconn.select_item_id_from_car(MainApp.conn, MainApp.idx)
+
+        self.car_image = GetLink(data[0][12], 0)
+        self.car_image1 = GetLink(data[0][12], 1)
+        self.car_image2 = GetLink(data[0][12], 2)
+        self.car_image3 = GetLink(data[0][12], 3)
+        self.car_image4 = GetLink(data[0][12], 4)
+        self.inform_car = data[0][0]
+        self.price_car = data[0][1]
+        self.status_car = data[0][2]
+        self.manufacture_year_car = data[0][8]
+        self.km_car = data[0][4]
+        self.shift_stick_inform_car = data[0][5]
+        self.Dong_xe = data[0][3]
+        self.Nhien_Lieu = data[0][6]
+        self.Nguoi_Ban = data[0][7]
+        self.Dan_dong= data[0][9]
+        self.Mau_Xe = data[0][10]
+        self.Xuat_Xu = data[0][11]
+        self.Mo_Ta = data[0][13].strip("[] '")
+        self.place = data[0][14]
+        self.day = data[0][15]
 
     def changeScreen(self):
         if MainApp.toListScreen:
@@ -204,29 +202,44 @@ class ProfileScreen(MDScreen):
 
     def on_pre_enter(self):
         if self.flag:
-            self.clock = Clock.schedule_once(self.list_items, 0.5)
-
-    def list_items(self, *args):
-        Window.size = [300, 600]
-        for i in range(1, 4):
-            self.ids.listitem.add_widget(CarCard(   car_image = GetLink(MainApp.data[i][12], 0),
-                                                    inform_car = MainApp.data[i][0],
-                                                    price_car = MainApp.data[i][1],
-                                                    status_car = MainApp.data[i][2],
-                                                    manufacture_year_car = MainApp.data[i][8],
-                                                    km_car = MainApp.data[i][4],
-                                                    shift_stick_inform_car = MainApp.data[i][5],
-                                                    place = MainApp.data[i][14],
-                                                    day = MainApp.data[i][15],
-                                                    idx = i))
-        self.flag = False
+            Window.size = [300, 600]
+            self.ids.listitem.add_widget(components.fit_image.Fit_Image())
 
     def toFormListCar(self):
         MainApp.sm.transition.direction = 'right'
         MainApp.sm.current = 'listcarscreen'
         self.ids.listitem.clear_widgets()
         self.flag = True
-    
+
+    def update_list_item(self, data):
+        self.ids.listitem.clear_widgets()
+        for i in data:
+            self.ids.listitem.add_widget(CarCard(   car_image = GetLink(i[12], 0),
+                                                    inform_car = i[0],
+                                                    price_car = i[1],
+                                                    status_car = i[2],
+                                                    manufacture_year_car = i[8],
+                                                    km_car = i[4],
+                                                    shift_stick_inform_car = i[5],
+                                                    place = i[14],
+                                                    day = i[15],
+                                                    idx = int(i[16])))
+            self.flag = False
+
+    def likeIcon(self):
+        self.clock = Clock.schedule_once(self.Like, 0.5)
+
+    def historyIcon(self):
+        self.clock = Clock.schedule_once(self.History, 0.5)
+
+    def Like(self, *args):
+        data = dataconn.select_item_from_like(MainApp.conn, MainApp.username)
+        self.update_list_item(data)
+
+    def History(self, *args):
+        data = dataconn.select_item_from_history(MainApp.conn, MainApp.username)
+        self.update_list_item(data)
+             
 def GetLink(links, pos):
     try:
         link = links.split()[pos]
@@ -248,22 +261,25 @@ def load_all_kivy_file():
     Builder.load_file('screen_manager/detail_car_screen.kv')
     Builder.load_file('screen_manager/profile_screen.kv')
     Builder.load_file('components/circular_avatar_image.kv')
+    Builder.load_file('components/fit_image.kv')
 
 class MainApp(MDApp):
     sm = ScreenManager()
     users = pd.read_csv('assets/login.csv')
     df = pd.DataFrame(users)
-    data = dataconn.select_all_table("assets/database.sqlite", "Car_data")
-    idx = -20
+    idx = None
+    flag = -20
     toListScreen = None
+    conn = dataconn.create_connection("C:/Users/ACER/Downloads/CarMarketApp_Python_Kivymd/assets/database.sqlite")
+    username = "Le Minh"
 
     def build(self):
         self.theme_cls.primary_palette = "Blue"
         self.sm.add_widget(LoginForm(name='login'))
         self.sm.add_widget(ListCarScreen(name='listcarscreen'))
         self.sm.add_widget(RegisterForm(name='register'))
-        self.sm.add_widget(ProfileScreen(name = 'profile'))
         self.sm.add_widget(DetailCarScreen(name = 'detailcarscreen'))
+        self.sm.add_widget(ProfileScreen(name = 'profile'))
         return self.sm
 
 if __name__ == '__main__':
