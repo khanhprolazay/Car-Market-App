@@ -1,4 +1,3 @@
-from asyncio import QueueEmpty
 import sqlite3
 from sqlite3 import Error
 
@@ -45,5 +44,18 @@ def select_username(conn, email):
 def select_item_from_history(conn, username):
     cur = conn.cursor()
     cur.execute("SELECT * FROM Car_data WHERE id in (SELECT car_id FROM History where username = '%s')" %username)
+    rows = cur.fetchall()
+    return rows
+
+def Filter_hang_xe(db_file, hang_xe):
+    conn = create_connection(db_file)
+    cur = conn.cursor()
+    query = """
+        SELECT id
+        FROM Car_data
+        WHERE instr(Tieu_de, ?) > 0
+        LIMIT 20 OFFSET 20;
+    """
+    cur.execute(query,[hang_xe])
     rows = cur.fetchall()
     return rows

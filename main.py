@@ -1,6 +1,3 @@
-from os import link
-from tokenize import String
-from unicodedata import name
 from kivy.lang import Builder
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -9,10 +6,11 @@ from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from kivy.factory import Factory
 from kivymd.uix.card import MDCard
 from kivy.uix.image import Image
+from kivy.utils import get_color_from_hex
 from kivymd.utils.fitimage import FitImage
-from numpy import source
 import pandas as pd
 from kivymd.uix.screen import MDScreen
 from kivy.clock import Clock
@@ -84,6 +82,7 @@ class CarCard(MDCard):
     shift_stick_inform_car = StringProperty()
     place = StringProperty()
     day = StringProperty()
+    heart_color = StringProperty()
     idx = NumericProperty()
 
     def toFormDetailProduct(self):
@@ -95,8 +94,16 @@ class CarCard(MDCard):
         MainApp.sm.transition.direction = 'left'
         MainApp.sm.current = 'detailcarscreen'
 
+    def changeColorIcon(self):
+        black_color = get_color_from_hex("#000000")
+        if self.ids['heart_icon'].text_color != black_color:
+            self.ids['heart_icon'].text_color = black_color
+        else:
+            self.ids['heart_icon'].text_color = get_color_from_hex('#EB144C')
+
 class ListCarScreen(MDScreen):
     flag = True
+    begin = -20
 
     def on_pre_enter(self):
         if self.flag:
@@ -104,8 +111,7 @@ class ListCarScreen(MDScreen):
             self.rightArrowIcon()
 
     def list_items(self, *args):
-        limit = MainApp.flag + 20
-        data = dataconn.select_20_item_from_table(MainApp.conn, "Car_data", MainApp.flag)
+        data = dataconn.select_20_item_from_table(MainApp.conn, "Car_data", self.begin)
 
         for i in data:
             self.ids.listitem.add_widget(CarCard(   car_image = GetLink(i[12], 0),
@@ -117,6 +123,7 @@ class ListCarScreen(MDScreen):
                                                     shift_stick_inform_car = i[5],
                                                     place = i[14],
                                                     day = i[15],
+                                                    heart_color = "#EB144C",
                                                     idx = int(i[16])))
   
         self.flag = False
@@ -127,14 +134,14 @@ class ListCarScreen(MDScreen):
         self.list_items()
 
     def leftArrowIcon(self):
-        temp = MainApp.flag - 20
+        temp = self.begin - 20
         if temp < 0:
             return
-        MainApp.flag -= 20
+        self.begin -= 20
         self.clock = Clock.schedule_once(self.update_list_item, 0.5)
 
     def rightArrowIcon(self):
-        MainApp.flag += 20
+        self.begin += 20
         self.clock = Clock.schedule_once(self.update_list_item, 0.5)
 
     def toProfileForm(self):
@@ -220,6 +227,7 @@ class ProfileScreen(MDScreen):
                                                     shift_stick_inform_car = i[5],
                                                     place = i[14],
                                                     day = i[15],
+                                                    heart_color = '#EB144C',
                                                     idx = int(i[16])))
             self.flag = False
     
@@ -284,7 +292,7 @@ class MainApp(MDApp):
     idx = None
     flag = -20
     toListScreen = None
-    conn = dataconn.create_connection("C:/Users/ACER/Downloads/CarMarketApp_Python_Kivymd/assets/database.sqlite")
+    conn = dataconn.create_connection("assets/database.sqlite")
     username = "Le Minh"
 
     def build(self):
@@ -295,7 +303,6 @@ class MainApp(MDApp):
         self.sm.add_widget(DetailCarScreen(name = 'detailcarscreen'))
         self.sm.add_widget(ProfileScreen(name = 'profile'))
         return self.sm
-
 
 if __name__ == '__main__':
     load_all_kivy_file()
