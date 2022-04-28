@@ -24,8 +24,9 @@ class LoginForm(Screen):
 
     def validate(self):
         if self.checkLogin(self.email.text, self.password.text):
+            query = "SELECT Name FROM Login WHERE email = '%s'"
             MainApp.sm.current = "listcarscreen"
-            MainApp.username = dataconn.select_username(MainApp.conn, self.email.text)
+            MainApp.username = dataconn.executeQueryOneContion(MainApp.conn, query, self.email.text)[0][0] 
             self.reset()
         else:
             messageBox('Warning!', 'Incorrect Username or Password')
@@ -111,9 +112,21 @@ class ListCarScreen(MDScreen):
             self.rightArrowIcon()
 
     def list_items(self, *args):
-        data = dataconn.select_20_item_from_table(MainApp.conn, "Car_data", self.begin)
+        query = "SELECT * FROM Car_data LIMIT 20 OFFSET " + str(self.begin)
+        data = dataconn.executeQuery(MainApp.conn, query)
+
+        query = "SELECT car_id FROM LIKE"
+        like_car_id = dataconn.executeQuery(MainApp.conn, query)
 
         for i in data:
+            car_index = int(i[16])
+
+            color = "#000000"
+            for k in like_car_id:
+                if car_index == k[0]:
+                    color = "#EB144C"
+                    break
+
             self.ids.listitem.add_widget(CarCard(   car_image = GetLink(i[12], 0),
                                                     inform_car = i[0],
                                                     price_car = i[1],
@@ -123,8 +136,8 @@ class ListCarScreen(MDScreen):
                                                     shift_stick_inform_car = i[5],
                                                     place = i[14],
                                                     day = i[15],
-                                                    heart_color = "#EB144C",
-                                                    idx = int(i[16])))
+                                                    heart_color = color,
+                                                    idx = car_index))
   
         self.flag = False
 
@@ -173,7 +186,8 @@ class DetailCarScreen(MDScreen):
     def on_pre_enter(self):
         Window.size = [300, 600]
 
-        data = dataconn.select_item_id_from_car(MainApp.conn, MainApp.idx)
+        query = "SELECT * FROM Car_data WHERE id = '%d'"
+        data = dataconn.executeQueryOneContion(MainApp.conn, query, MainApp.idx)
 
         self.car_image = GetLink(data[0][12], 0)
         self.car_image1 = GetLink(data[0][12], 1)
@@ -217,7 +231,19 @@ class ProfileScreen(MDScreen):
     def update_list_item(self, data):
         self.ids.listitem.clear_widgets()
         self.ids.listitem.add_widget(ProfileCard())
+
+        query = "SELECT car_id FROM Like"
+        like_car_id = dataconn.executeQuery(MainApp.conn, query)
+
         for i in data:
+            car_index = int(i[16])
+
+            color = "#000000"
+            for k in like_car_id:
+                if car_index == k[0]:
+                    color = "#EB144C"
+                    break
+
             self.ids.listitem.add_widget(CarCard(   car_image = GetLink(i[12], 0),
                                                     inform_car = i[0],
                                                     price_car = i[1],
@@ -227,8 +253,8 @@ class ProfileScreen(MDScreen):
                                                     shift_stick_inform_car = i[5],
                                                     place = i[14],
                                                     day = i[15],
-                                                    heart_color = '#EB144C',
-                                                    idx = int(i[16])))
+                                                    heart_color = color,
+                                                    idx = car_index))
             self.flag = False
     
     def toFormListCar(self):
@@ -254,11 +280,13 @@ class ProfileCard(MDCard):
         self.clock = Clock.schedule_once(self.History, 0.5)
 
     def Like(self, *args):
-        data = dataconn.select_item_from_like(MainApp.conn, MainApp.username)
+        query = "SELECT * FROM Car_data WHERE id in (SELECT car_id FROM Like where username = '%s')"
+        data = dataconn.executeQueryOneContion(MainApp.conn, query, MainApp.username)
         MainApp.sm.get_screen("profile").update_list_item(data)
 
     def History(self, *args):
-        data = dataconn.select_item_from_history(MainApp.conn, MainApp.username)
+        query = "SELECT * FROM Car_data WHERE id in (SELECT car_id FROM History where username = '%s')"
+        data = dataconn.executeQueryOneContion(MainApp.conn, query, MainApp.username)
         MainApp.sm.get_screen("profile").update_list_item(data)
 
 def GetLink(links, pos):
@@ -297,8 +325,9 @@ class MainApp(MDApp):
 
     def build(self):
         self.theme_cls.primary_palette = "Blue"
-        self.sm.add_widget(LoginForm(name='login'))
         self.sm.add_widget(ListCarScreen(name='listcarscreen'))
+        self.sm.add_widget(LoginForm(name='login'))
+        #self.sm.add_widget(ListCarScreen(name='listcarscreen'))
         self.sm.add_widget(RegisterForm(name='register'))
         self.sm.add_widget(DetailCarScreen(name = 'detailcarscreen'))
         self.sm.add_widget(ProfileScreen(name = 'profile'))
