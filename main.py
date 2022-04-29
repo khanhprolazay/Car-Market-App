@@ -25,8 +25,8 @@ class LoginForm(Screen):
     def validate(self):
         if self.checkLogin(self.email.text, self.password.text):
             query = "SELECT Name FROM Login WHERE email = '%s'"
-            MainApp.sm.current = "listcarscreen"
-            MainApp.username = dataconn.executeQueryOneContion(MainApp.conn, query, self.email.text)[0][0] 
+            MyApp.username = dataconn.executeSelectQueryOneContion(MyApp.conn, query, self.email.text)[0][0]
+            MyApp.sm.current = "listcarscreen"
             self.reset()
         else:
             messageBox('Warning!', 'Incorrect Username or Password')
@@ -36,11 +36,11 @@ class LoginForm(Screen):
         self.password.text = ""
 
     def checkLogin(self, email, password):
-        index_list = MainApp.df.index.tolist()
+        index_list = MyApp.df.index.tolist()
         i = 0
         check = False
         while i <= len(index_list) - 1:
-            if (email == MainApp.df.loc[i].at['Email']) and (password == MainApp.df.loc[i].at['Password']):
+            if (email == MyApp.df.loc[i].at['Email']) and (password == MyApp.df.loc[i].at['Password']):
                 check = True
             i += 1
         return check
@@ -55,11 +55,11 @@ class RegisterForm(Screen):
         user = pd.DataFrame([[self.fullname.text, self.email.text, self.password.text]],
                             columns=['Name', 'Email', 'Password'])
         if self.email.text != "" or self.fullname.text != "" or self.password.text != "" or self.confPass.text != "":
-            if self.email.text not in MainApp.users['Email'].unique():
+            if self.email.text not in MyApp.users['Email'].unique():
                 if self.password.text == self.confPass.text:
                     user.to_csv('login.csv', mode='a', header=False, index=False)
                     messageBox('Message', 'Register Done!')
-                    MainApp.sm.current = 'login'
+                    MyApp.sm.current = 'login'
                     self.fullname.text = ""
                     self.email.text = ""
                     self.password.text = ""
@@ -87,20 +87,30 @@ class CarCard(MDCard):
     idx = NumericProperty()
 
     def toFormDetailProduct(self):
-        if MainApp.sm.current == 'listcarscreen':
-            MainApp.toListScreen = True
+        if MyApp.sm.current == 'listcarscreen':
+            MyApp.toListScreen = True
         else:
-            MainApp.toListScreen = False
-        MainApp.idx = self.idx
-        MainApp.sm.transition.direction = 'left'
-        MainApp.sm.current = 'detailcarscreen'
+            MyApp.toListScreen = False
+        query = '''INSERT INTO History(username, car_id) VALUES (?, ?)'''
+        dataconn.executeInsertDeleteQuery(MyApp.conn, query, (MyApp.username, self.idx))
+        MyApp.idx = self.idx
+        MyApp.sm.transition.direction = 'left'
+        MyApp.sm.current = 'detailcarscreen'
 
-    def changeColorIcon(self):
+    def insertValueToLikeTable(self):
+        query = '''INSERT INTO Like(username, car_id) VALUES (?, ?)'''
+        dataconn.executeInsertQuery(MyApp.conn, query, (MyApp.username, self.idx))
+
+    def heartIcon(self):
         black_color = get_color_from_hex("#000000")
         if self.ids['heart_icon'].text_color != black_color:
             self.ids['heart_icon'].text_color = black_color
+            query = ''' DELETE FROM Like WHERE username = ? AND car_id = ?'''
+            dataconn.executeInsertDeleteQuery(MyApp.conn, query, (MyApp.username, self.idx))
         else:
             self.ids['heart_icon'].text_color = get_color_from_hex('#EB144C')
+            query = '''INSERT INTO Like(username, car_id) VALUES (?, ?)'''
+            dataconn.executeInsertDeleteQuery(MyApp.conn, query, (MyApp.username, self.idx))
 
 class ListCarScreen(MDScreen):
     flag = True
@@ -113,10 +123,10 @@ class ListCarScreen(MDScreen):
 
     def list_items(self, *args):
         query = "SELECT * FROM Car_data LIMIT 20 OFFSET " + str(self.begin)
-        data = dataconn.executeQuery(MainApp.conn, query)
+        data = dataconn.executeSelectQuery(MyApp.conn, query)
 
-        query = "SELECT car_id FROM LIKE"
-        like_car_id = dataconn.executeQuery(MainApp.conn, query)
+        query = "SELECT car_id FROM Like WHERE username = '%s'"
+        like_car_id = dataconn.executeSelectQueryOneContion(MyApp.conn, query, MyApp.username)
 
         for i in data:
             car_index = int(i[16])
@@ -158,8 +168,13 @@ class ListCarScreen(MDScreen):
         self.clock = Clock.schedule_once(self.update_list_item, 0.5)
 
     def toProfileForm(self):
-        MainApp.sm.transition.direction = 'left'
-        MainApp.sm.current = 'profile'
+        MyApp.sm.transition.direction = 'left'
+        MyApp.sm.current = 'profile'
+
+    def reset(self):
+        self.flag = True
+        self.begin = -20
+        self.ids.listitem.clear_widgets()
                                                     
 class DetailCarScreen(MDScreen):
     car_image = StringProperty()
@@ -186,8 +201,8 @@ class DetailCarScreen(MDScreen):
     def on_pre_enter(self):
         Window.size = [300, 600]
 
-        query = "SELECT * FROM Car_data WHERE id = '%d'"
-        data = dataconn.executeQueryOneContion(MainApp.conn, query, MainApp.idx)
+        query = '''SELECT * FROM Car_data WHERE id = %d'''
+        data = dataconn.executeSelectQueryOneContion(MyApp.conn, query, MyApp.idx)
 
         self.car_image = GetLink(data[0][12], 0)
         self.car_image1 = GetLink(data[0][12], 1)
@@ -211,12 +226,12 @@ class DetailCarScreen(MDScreen):
         self.day = data[0][15]
 
     def changeScreen(self):
-        if MainApp.toListScreen:
-            MainApp.sm.transition.direction = 'right'
-            MainApp.sm.current = "listcarscreen"
+        if MyApp.toListScreen:
+            MyApp.sm.transition.direction = 'right'
+            MyApp.sm.current = "listcarscreen"
         else:
-            MainApp.sm.transition.direction = 'right'
-            MainApp.sm.current = "profile"
+            MyApp.sm.transition.direction = 'right'
+            MyApp.sm.current = "profile"
 
 class ProfileScreen(MDScreen):
     profile_picture = 'assets/profile_picture.png'
@@ -233,7 +248,7 @@ class ProfileScreen(MDScreen):
         self.ids.listitem.add_widget(ProfileCard())
 
         query = "SELECT car_id FROM Like"
-        like_car_id = dataconn.executeQuery(MainApp.conn, query)
+        like_car_id = dataconn.executeSelectQuery(MyApp.conn, query)
 
         for i in data:
             car_index = int(i[16])
@@ -258,20 +273,26 @@ class ProfileScreen(MDScreen):
             self.flag = False
     
     def toFormListCar(self):
-        MainApp.sm.transition.direction = 'right'
-        MainApp.sm.current = 'listcarscreen'
+        MyApp.sm.transition.direction = 'right'
+        MyApp.sm.current = 'listcarscreen'
         self.ids.listitem.clear_widgets()
         self.flag = True
+
+    def reset(self):
+        self.flag = True
+        self.ids.listitem.clear_widgets()
 
 class ProfileCard(MDCard):
     id = StringProperty()
 
     def toFormListCar(self):
-        MainApp.sm.get_screen("profile").toFormListCar()
+        MyApp.sm.get_screen("profile").toFormListCar()
 
     def toFormLogin(self):
-        MainApp.sm.transition.direction = 'right'
-        MainApp.sm.current = 'login'
+        MyApp.sm.get_screen('listcarscreen').reset()
+        MyApp.sm.get_screen('profile').reset()
+        MyApp.sm.transition.direction = 'left'
+        MyApp.sm.current = 'login'
     
     def likeIcon(self):
         self.clock = Clock.schedule_once(self.Like, 0.5)
@@ -281,13 +302,18 @@ class ProfileCard(MDCard):
 
     def Like(self, *args):
         query = "SELECT * FROM Car_data WHERE id in (SELECT car_id FROM Like where username = '%s')"
-        data = dataconn.executeQueryOneContion(MainApp.conn, query, MainApp.username)
-        MainApp.sm.get_screen("profile").update_list_item(data)
+        data = dataconn.executeSelectQueryOneContion(MyApp.conn, query, MyApp.username)
+        MyApp.sm.get_screen("profile").update_list_item(data)
 
     def History(self, *args):
         query = "SELECT * FROM Car_data WHERE id in (SELECT car_id FROM History where username = '%s')"
-        data = dataconn.executeQueryOneContion(MainApp.conn, query, MainApp.username)
-        MainApp.sm.get_screen("profile").update_list_item(data)
+        data = dataconn.executeSelectQueryOneContion(MyApp.conn, query, MyApp.username)
+        MyApp.sm.get_screen("profile").update_list_item(data)
+
+    def clearHistory(self):
+        query = "DELETE FROM History"
+        dataconn.executeInsertDeleteQuery(MyApp.conn, query, ())
+        self.History()
 
 def GetLink(links, pos):
     try:
@@ -318,16 +344,14 @@ class MainApp(MDApp):
     users = pd.read_csv('assets/login.csv')
     df = pd.DataFrame(users)
     idx = None
-    flag = -20
     toListScreen = None
-    conn = dataconn.create_connection("assets/database.sqlite")
+    conn = dataconn.create_connection("assets/database.db")
     username = "Le Minh"
 
     def build(self):
         self.theme_cls.primary_palette = "Blue"
-        self.sm.add_widget(ListCarScreen(name='listcarscreen'))
         self.sm.add_widget(LoginForm(name='login'))
-        #self.sm.add_widget(ListCarScreen(name='listcarscreen'))
+        self.sm.add_widget(ListCarScreen(name='listcarscreen'))
         self.sm.add_widget(RegisterForm(name='register'))
         self.sm.add_widget(DetailCarScreen(name = 'detailcarscreen'))
         self.sm.add_widget(ProfileScreen(name = 'profile'))
@@ -337,4 +361,6 @@ if __name__ == '__main__':
     load_all_kivy_file()
     Window.size = (375, 667)
 
-    MainApp().run()
+    MyApp = MainApp()
+    MyApp.run()
+    MyApp.conn.close()

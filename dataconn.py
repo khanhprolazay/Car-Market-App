@@ -22,14 +22,24 @@ def Filter_hang_xe(db_file, hang_xe):
     rows = cur.fetchall()
     return rows
 
-def executeQuery(conn, query):
+def executeSelectQuery(conn, query):
     cur = conn.cursor()
     cur.execute(query)
     rows = cur.fetchall()
     return rows
 
-def executeQueryOneContion(conn, query, var):
+def executeSelectQueryOneContion(conn, query, var):
     cur = conn.cursor()
     cur.execute(query %var)
     rows = cur.fetchall()
     return rows
+
+def executeInsertDeleteQuery(conn, query, values):
+    cur = conn.cursor()
+    try:
+        cur.execute(query, values)
+        conn.commit()
+        rows = cur.fetchall()
+        return rows
+    except:
+        pass
