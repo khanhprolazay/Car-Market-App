@@ -6,7 +6,6 @@ from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.uix.label import Label
-from kivy.factory import Factory
 from kivymd.uix.card import MDCard
 from kivy.uix.image import Image
 from kivy.utils import get_color_from_hex
@@ -15,8 +14,9 @@ import pandas as pd
 from kivymd.uix.screen import MDScreen
 from kivy.clock import Clock
 import components.fit_image
-import components.circular_avatar_image
 import dataconn
+from kivy.uix.recycleview import RecycleView
+from assets.logo import logo
 
 class LoginForm(Screen):
     email = ObjectProperty(None)
@@ -26,6 +26,7 @@ class LoginForm(Screen):
         if self.checkLogin(self.email.text, self.password.text):
             query = "SELECT Name FROM Login WHERE email = '%s'"
             MyApp.username = dataconn.executeSelectQueryOneContion(MyApp.conn, query, self.email.text)[0][0]
+            MyApp.sm.transition.direction = 'left'
             MyApp.sm.current = "listcarscreen"
             self.reset()
         else:
@@ -83,7 +84,7 @@ class CarCard(MDCard):
     shift_stick_inform_car = StringProperty()
     place = StringProperty()
     day = StringProperty()
-    heart_color = StringProperty()
+    heart_color = StringProperty("#000000")
     idx = NumericProperty()
 
     def toFormDetailProduct(self):
@@ -93,7 +94,12 @@ class CarCard(MDCard):
             MyApp.toListScreen = False
         query = '''INSERT INTO History(username, car_id) VALUES (?, ?)'''
         dataconn.executeInsertDeleteQuery(MyApp.conn, query, (MyApp.username, self.idx))
-        MyApp.idx = self.idx
+
+        MyApp.sm.get_screen('detailcarscreen').idx = self.idx
+        if self.ids['heart_icon'].text_color == MyApp.red_color:
+            MyApp.sm.get_screen('detailcarscreen').ids['heart_icon'].text_color = MyApp.red_color
+        else:
+            MyApp.sm.get_screen('detailcarscreen').ids['heart_icon'].text_color = MyApp.black_color
         MyApp.sm.transition.direction = 'left'
         MyApp.sm.current = 'detailcarscreen'
 
@@ -102,58 +108,61 @@ class CarCard(MDCard):
         dataconn.executeInsertQuery(MyApp.conn, query, (MyApp.username, self.idx))
 
     def heartIcon(self):
-        black_color = get_color_from_hex("#000000")
-        if self.ids['heart_icon'].text_color != black_color:
-            self.ids['heart_icon'].text_color = black_color
+        if self.ids['heart_icon'].text_color != MyApp.black_color:
+            self.ids['heart_icon'].text_color = MyApp.black_color
             query = ''' DELETE FROM Like WHERE username = ? AND car_id = ?'''
             dataconn.executeInsertDeleteQuery(MyApp.conn, query, (MyApp.username, self.idx))
         else:
-            self.ids['heart_icon'].text_color = get_color_from_hex('#EB144C')
+            self.ids['heart_icon'].text_color = MyApp.red_color
             query = '''INSERT INTO Like(username, car_id) VALUES (?, ?)'''
             dataconn.executeInsertDeleteQuery(MyApp.conn, query, (MyApp.username, self.idx))
 
 class ListCarScreen(MDScreen):
     flag = True
-    begin = -20
+    begin = 0
+    logo_index = None
+    logo_name = None
 
     def on_pre_enter(self):
         if self.flag:
             Window.size = [300, 600]
-            self.rightArrowIcon()
+            self.list_logos()
+            self.list_items()
 
     def list_items(self, *args):
-        query = "SELECT * FROM Car_data LIMIT 20 OFFSET " + str(self.begin)
-        data = dataconn.executeSelectQuery(MyApp.conn, query)
+        if self.logo_index == None:
+            query = "SELECT * FROM Car_data LIMIT 20 OFFSET " + str(self.begin)
+            data = dataconn.executeSelectQuery(MyApp.conn, query)
+        else:
+            query = """SELECT * FROM Car_data WHERE instr(Tieu_de, ?) > 0 LIMIT 20 OFFSET """ + str(self.begin)
+            data = dataconn.Filter_hang_xe(MyApp.conn, query, self.ids['listlogo'].children[self.logo_index].ids['lb_name'].text)
 
         query = "SELECT car_id FROM Like WHERE username = '%s'"
         like_car_id = dataconn.executeSelectQueryOneContion(MyApp.conn, query, MyApp.username)
 
         for i in data:
             car_index = int(i[16])
-
             color = "#000000"
             for k in like_car_id:
                 if car_index == k[0]:
                     color = "#EB144C"
                     break
-
-            self.ids.listitem.add_widget(CarCard(   car_image = GetLink(i[12], 0),
-                                                    inform_car = i[0],
-                                                    price_car = i[1],
-                                                    status_car = i[2],
-                                                    manufacture_year_car = i[8],
-                                                    km_car = i[4],
-                                                    shift_stick_inform_car = i[5],
-                                                    place = i[14],
-                                                    day = i[15],
-                                                    heart_color = color,
-                                                    idx = car_index))
-  
+            self.ids.listitem.data.append({     "car_image": GetLink(i[12].split()[0]),
+                                                "inform_car": i[0],
+                                                "price_car": i[1],
+                                                "status_car": i[2],
+                                                "manufacture_year_car": i[8],
+                                                "km_car": i[4],
+                                                "shift_stick_inform_car": i[5],
+                                                "place": i[14],
+                                                "day": i[15],
+                                                "heart_color": color,
+                                                "idx": car_index})
         self.flag = False
 
     def update_list_item(self, *args):
         self.flag = True
-        self.ids.listitem.clear_widgets()
+        self.clearListItem()
         self.list_items()
 
     def leftArrowIcon(self):
@@ -165,6 +174,7 @@ class ListCarScreen(MDScreen):
 
     def rightArrowIcon(self):
         self.begin += 20
+        self.update_list_item()
         self.clock = Clock.schedule_once(self.update_list_item, 0.5)
 
     def toProfileForm(self):
@@ -175,13 +185,37 @@ class ListCarScreen(MDScreen):
         self.flag = True
         self.begin = -20
         self.ids.listitem.clear_widgets()
-                                                    
+
+    def list_logos(self):
+        idx = len(logo) - 1
+        for i in logo:
+            self.ids.listlogo.add_widget(CircularAvatarImage(avatar = logo.get(i), name = i, idx = idx, color = "#20B2AA"))
+            idx -= 1
+
+    def clearListItem(self):
+        self.ids.listitem.data = []
+
+    def logoClick(self, idx):
+        if self.logo_index != None:
+            self.ids['listlogo'].children[self.logo_index].ids['line'].md_bg_color = MyApp.black_color
+        self.ids['listlogo'].children[idx].ids['line'].md_bg_color = MyApp.red_color
+        self.flag = True
+        self.begin = 0
+        self.logo_index = idx
+        self.clock = Clock.schedule_once(self.update_list_item, 0.5) 
+
+    def homeIcon(self):
+        self.logo_index = None
+        self.begin = 0
+        self.clock = Clock.schedule_once(self.update_list_item, 0.5)
+
+    def clearAll(self):
+        self.ids.listitem.data = []
+        self.ids.listlogo.clear_widgets()
+        self.begin = 0
+        self.flag = True
+
 class DetailCarScreen(MDScreen):
-    car_image = StringProperty()
-    car_image1 = StringProperty()
-    car_image2 = StringProperty()
-    car_image3 = StringProperty()
-    car_image4 = StringProperty()
     inform_car = StringProperty()
     price_car = StringProperty()
     status_car = StringProperty()
@@ -197,18 +231,13 @@ class DetailCarScreen(MDScreen):
     Mo_Ta = StringProperty()
     place = StringProperty()
     day = StringProperty()
+    idx = NumericProperty()
 
     def on_pre_enter(self):
         Window.size = [300, 600]
 
         query = '''SELECT * FROM Car_data WHERE id = %d'''
-        data = dataconn.executeSelectQueryOneContion(MyApp.conn, query, MyApp.idx)
-
-        self.car_image = GetLink(data[0][12], 0)
-        self.car_image1 = GetLink(data[0][12], 1)
-        self.car_image2 = GetLink(data[0][12], 2)
-        self.car_image3 = GetLink(data[0][12], 3)
-        self.car_image4 = GetLink(data[0][12], 4)
+        data = dataconn.executeSelectQueryOneContion(MyApp.conn, query, self.idx)
         self.inform_car = data[0][0]
         self.price_car = data[0][1]
         self.status_car = data[0][2]
@@ -225,6 +254,17 @@ class DetailCarScreen(MDScreen):
         self.place = data[0][14]
         self.day = data[0][15]
 
+        self.list_image_car(data[0][12])
+
+    def list_image_car(self, str_list_link):
+        list_link = str_list_link.split()
+        for i in list_link:
+            self.ids.list_image_car.add_widget(FitImage(source = GetLink(i),
+                                                        radius = [20, ],
+                                                        size_hint = [None, None],
+                                                        height = 130,
+                                                        width = 200))
+
     def changeScreen(self):
         if MyApp.toListScreen:
             MyApp.sm.transition.direction = 'right'
@@ -232,65 +272,108 @@ class DetailCarScreen(MDScreen):
         else:
             MyApp.sm.transition.direction = 'right'
             MyApp.sm.current = "profile"
+        self.ids.list_image_car.clear_widgets()
+
+    def heartIcon(self):
+        if self.ids['heart_icon'].text_color != MyApp.black_color:
+            self.ids['heart_icon'].text_color = MyApp.black_color
+            query = ''' DELETE FROM Like WHERE username = ? AND car_id = ?'''
+            dataconn.executeInsertDeleteQuery(MyApp.conn, query, (MyApp.username, self.idx))
+        else:
+            self.ids['heart_icon'].text_color = MyApp.red_color
+            query = '''INSERT INTO Like(username, car_id) VALUES (?, ?)'''
+            dataconn.executeInsertDeleteQuery(MyApp.conn, query, (MyApp.username, self.idx))
+        MyApp.sm.get_screen('listcarscreen').update_list_item()
+        try:
+            if MyApp.sm.get_screen('profile').ids['box'].children[0].ids['heart_icon'].text_color == MainApp.red_color:
+                MyApp.sm.get_screen('profile').ids['box'].children[0].Like()
+            else:
+                pass
+        except:
+            pass
 
 class ProfileScreen(MDScreen):
     profile_picture = 'assets/profile_picture.png'
-    flag = True
+    flag_profile_card = True
+    flag_fit_image = True
 
     def on_pre_enter(self):
-        if self.flag:
-            Window.size = [300, 600]
-            self.ids.listitem.add_widget(ProfileCard())
-            self.ids.listitem.add_widget(components.fit_image.Fit_Image())
+        if self.flag_profile_card:
+            self.ids.listitem.data = []
+            self.ids.box.add_widget(ProfileCard(id = 'profile_card', username = MyApp.username, gmail = MyApp.gmail))
+            self.flag_profile_card = False
+        if self.flag_fit_image:
+            self.ids.box.add_widget(components.fit_image.Fit_Image())
+            self.flag_fit_image = False
 
     def update_list_item(self, data):
-        self.ids.listitem.clear_widgets()
-        self.ids.listitem.add_widget(ProfileCard())
-
+        self.removeFitImage()
+        self.ids.listitem.data = []
         query = "SELECT car_id FROM Like"
         like_car_id = dataconn.executeSelectQuery(MyApp.conn, query)
 
         for i in data:
             car_index = int(i[16])
-
             color = "#000000"
             for k in like_car_id:
                 if car_index == k[0]:
                     color = "#EB144C"
                     break
-
-            self.ids.listitem.add_widget(CarCard(   car_image = GetLink(i[12], 0),
-                                                    inform_car = i[0],
-                                                    price_car = i[1],
-                                                    status_car = i[2],
-                                                    manufacture_year_car = i[8],
-                                                    km_car = i[4],
-                                                    shift_stick_inform_car = i[5],
-                                                    place = i[14],
-                                                    day = i[15],
-                                                    heart_color = color,
-                                                    idx = car_index))
-            self.flag = False
+            self.ids.listitem.data.append({     "car_image": GetLink(i[12].split()[0]),
+                                                "inform_car": i[0],
+                                                "price_car": i[1],
+                                                "status_car": i[2],
+                                                "manufacture_year_car": i[8],
+                                                "km_car": i[4],
+                                                "shift_stick_inform_car": i[5],
+                                                "place": i[14],
+                                                "day": i[15],
+                                                "heart_color": color,
+                                                "idx": car_index})
+        self.flag = False
     
     def toFormListCar(self):
         MyApp.sm.transition.direction = 'right'
         MyApp.sm.current = 'listcarscreen'
-        self.ids.listitem.clear_widgets()
-        self.flag = True
-
+        self.flag_fit_image = True
+        self.ids.listitem.data = []
+        self.reset()
+        
     def reset(self):
-        self.flag = True
-        self.ids.listitem.clear_widgets()
+        self.removeFitImage()
+        self.ids['box'].children[0].ids['heart_icon'].text_color = MyApp.black_color
+        self.ids['box'].children[0].ids['history_icon'].text_color = MyApp.black_color
+        
+    def removeFitImage(self):
+        if len(self.ids.box.children) == 2:
+            self.ids.box.remove_widget(self.ids.box.children[0])
+
+    def clearAll(self):
+        self.ids.box.clear_widgets()
+        self.ids.listitem.data = []
+        self.flag_profile_card = True
+        self.flag_fit_image = True
+             
+class CircularAvatarImage(MDCard):
+    avatar = StringProperty()
+    name = StringProperty()
+    idx = NumericProperty()
+    color = StringProperty("#FFFFFF")
+
+    def changeLineColor(self):
+        MainApp.sm.get_screen('listcarscreen').logoClick(self.idx)
 
 class ProfileCard(MDCard):
     id = StringProperty()
+    username = StringProperty()
+    gmail = StringProperty()
 
     def toFormListCar(self):
+        MyApp.sm.transition.direction = 'right'
         MyApp.sm.get_screen("profile").toFormListCar()
 
     def toFormLogin(self):
-        MyApp.sm.get_screen('listcarscreen').reset()
-        MyApp.sm.get_screen('profile').reset()
+        MyApp.reset()
         MyApp.sm.transition.direction = 'left'
         MyApp.sm.current = 'login'
     
@@ -304,20 +387,23 @@ class ProfileCard(MDCard):
         query = "SELECT * FROM Car_data WHERE id in (SELECT car_id FROM Like where username = '%s')"
         data = dataconn.executeSelectQueryOneContion(MyApp.conn, query, MyApp.username)
         MyApp.sm.get_screen("profile").update_list_item(data)
+        self.ids['heart_icon'].text_color = get_color_from_hex('#EB144C')
+        self.ids['history_icon'].text_color = get_color_from_hex('#000000')
 
     def History(self, *args):
         query = "SELECT * FROM Car_data WHERE id in (SELECT car_id FROM History where username = '%s')"
         data = dataconn.executeSelectQueryOneContion(MyApp.conn, query, MyApp.username)
         MyApp.sm.get_screen("profile").update_list_item(data)
+        self.ids['heart_icon'].text_color = get_color_from_hex('#000000')
+        self.ids['history_icon'].text_color = get_color_from_hex('#EB144C')
 
     def clearHistory(self):
         query = "DELETE FROM History"
         dataconn.executeInsertDeleteQuery(MyApp.conn, query, ())
         self.History()
 
-def GetLink(links, pos):
+def GetLink(link):
     try:
-        link = links.split()[pos]
         link = "".join(c for c in link if c != '[' and c != ',' and c != "'" and c != ']')
         return link
     except:
@@ -329,37 +415,44 @@ def messageBox(title, content):
                 size_hint=(None, None), size=(400, 400))
     pop.open()
 
-def load_all_kivy_file():
-    Builder.load_file('screen_manager/list_car_screen.kv')
-    Builder.load_file('components/car_card.kv')
-    Builder.load_file('screen_manager/login_screen.kv')
-    Builder.load_file('screen_manager/detail_car_screen.kv')
-    Builder.load_file('screen_manager/profile_screen.kv')
-    Builder.load_file('components/circular_avatar_image.kv')
-    Builder.load_file('components/fit_image.kv')
-    Builder.load_file('components/profile_card.kv')
-
 class MainApp(MDApp):
     sm = ScreenManager()
     users = pd.read_csv('assets/login.csv')
     df = pd.DataFrame(users)
-    idx = None
     toListScreen = None
     conn = dataconn.create_connection("assets/database.db")
     username = "Le Minh"
+    gmail = "khanhprolazay@gmail.com"
+    black_color = get_color_from_hex("#000000")
+    red_color = get_color_from_hex("#EB144C")
 
     def build(self):
+        Window.size = (300, 600)
+        self.load_all_kivy_file()
         self.theme_cls.primary_palette = "Blue"
-        self.sm.add_widget(LoginForm(name='login'))
         self.sm.add_widget(ListCarScreen(name='listcarscreen'))
+        self.sm.add_widget(LoginForm(name='login'))
+        #self.sm.add_widget(ListCarScreen(name='listcarscreen'))
         self.sm.add_widget(RegisterForm(name='register'))
         self.sm.add_widget(DetailCarScreen(name = 'detailcarscreen'))
         self.sm.add_widget(ProfileScreen(name = 'profile'))
         return self.sm
 
+    def load_all_kivy_file(self):
+        Builder.load_file('screen_manager/list_car_screen.kv')
+        Builder.load_file('components/car_card.kv')
+        Builder.load_file('screen_manager/login_screen.kv')
+        Builder.load_file('screen_manager/detail_car_screen.kv')
+        Builder.load_file('screen_manager/profile_screen.kv')
+        Builder.load_file('components/circular_avatar_image.kv')
+        Builder.load_file('components/fit_image.kv')
+        Builder.load_file('components/profile_card.kv')
+
+    def reset(self):
+        self.sm.get_screen('listcarscreen').clearAll()
+        self.sm.get_screen('profile').clearAll()
+
 if __name__ == '__main__':
-    load_all_kivy_file()
-    Window.size = (375, 667)
 
     MyApp = MainApp()
     MyApp.run()
