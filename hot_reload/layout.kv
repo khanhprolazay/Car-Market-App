@@ -1,0 +1,169 @@
+#:import get_color_from_hex kivy.utils.get_color_from_hex
+#:import MDScreen kivymd.uix.screen
+<UI>:
+    Screen:
+        MDBoxLayout: 
+            orientation: 'vertical'
+            MDBoxLayout:
+                padding: '5dp'
+                adaptive_height: True
+
+                MDIconButton:
+                    icon: 'keyboard-backspace'
+                MDLabel:
+                    text: 'THÔNG TIN XE'
+                    font_size: 20
+
+                    
+            MDBoxLayout:
+                ScrollView:
+                    bar_width: 0
+                    MDBoxLayout:
+                        adaptive_height: True
+
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            adaptive_height: True
+                            spacing: 10
+
+                            MDBoxLayout:
+                                orientation: 'vertical'
+                                adaptive_height: True
+                                padding: 25, 10, 0, 0
+                                MDLabel:
+                                    text: 'Lamborghini Syan'
+                                    adaptive_height: True
+                                    theme_text_color: 'Custom'
+                                    font_style: 'Overline'
+                                    font_size: 12
+                                    
+                                MDLabel:
+                                    text: f'Giá: 250000$'
+                                    adaptive_height: True
+                                    theme_text_color: 'Custom'
+                                    font_style: 'H6'
+                                    text_color: get_color_from_hex('#EB144C')
+
+                            ScrollView:
+                                size_hint_y: None
+                                bar_width: 0
+                                height: 130
+                                MDBoxLayout:
+                                    adaptive_width: True
+                                    MDBoxLayout:
+                                        size_hint_y: None
+                                        adaptive_width: True
+                                        spacing: 10
+                                        id: list_image_car
+
+                                        FitImage:
+                                            source: 'assets/image1.jpg'
+                                            radius: [20,]
+                                            size_hint: None, None
+                                            height: 130
+                                            width: 200
+
+                                        FitImage:
+                                            source: 'assets/image2.jpg'
+                                            radius: [20,]
+                                            size_hint: None, None
+                                            height: 130
+                                            width: 200
+
+                            MDBoxLayout:
+                                orientation: 'vertical'
+                                spacing: 5
+                                padding: 15, 10, 15, 0
+                                adaptive_height: True
+                                MDBoxLayout:
+                                    adaptive_height: True
+                                    MyLeftIcon:
+                                        icon: 'assets/tag_icon.png'
+                                    MDLabel:
+                                        text: f'Tình trạng xe: Mới'
+                                        font_style:'Caption'
+                                    MyLeftIcon:
+                                        icon: 'assets/icon_Quang_Duong.png'
+                                    MDLabel:
+                                        text: f'Số km đã đi: 20km'
+                                        font_style:'Caption'
+                                
+                                MDBoxLayout:
+                                    adaptive_height: True
+                                    MyLeftIcon:
+                                        icon: 'assets/shift_stick_icon.png'
+                                    MDLabel:
+                                        text: f'Hộp số: Số tự động'
+                                        font_style:'Caption'
+                                    MyLeftIcon:
+                                        icon: 'assets/calendar_icon.png'
+                                    MDLabel:
+                                        text: f'Năm sản xuất: 2020'
+                                        font_style:'Caption' 
+
+                                MDBoxLayout:
+                                    adaptive_height: True
+                                    MyLeftIcon:
+                                        icon: 'assets/icon_car.png'
+                                    MDLabel:
+                                        text: f'Dòng Xe: SUV'
+                                        font_style:'Caption'
+                                    MyLeftIcon:
+                                        icon: 'assets/icon_nhien_lieeu.png'
+                                    MDLabel:
+                                        text: f'Nhiên Liệu: Xăng'
+                                        font_style:'Caption' 
+                           
+                                MDBoxLayout:
+                                    adaptive_height: True
+                                    MyLeftIcon:
+                                        icon: 'assets/Nguoi_Ban.png'
+                                    MDLabel:
+                                        text: f'Người Bán: Cá nhân'
+                                        font_style:'Caption'
+                                    MyLeftIcon:
+                                        icon: 'assets/icon_Dong_co.png'
+                                    MDLabel:
+                                        text: f'Dẫn Động: Cầu sau'
+                                        font_style:'Caption'
+
+                                MDBoxLayout:
+                                    adaptive_height: True
+                                    MyLeftIcon:
+                                        icon: 'assets/icon_Mau_xe.png'
+                                    MDLabel:
+                                        text: f'Màu Xe: Trắng'
+                                        font_style:'Caption'
+                                    MyLeftIcon:
+                                        icon: 'assets/icon_vi_tri.png'
+                                    MDLabel:
+                                        text: f'Xuất Xứ: ý'
+                                        font_style:'Caption'
+
+                            MDBoxLayout:
+                                orientation: 'horizontal'
+                                padding: 15, 0, 0, 0
+                                adaptive_height: True
+
+                                MDIconButton:
+                                    icon: 'assets/location_icon.png'
+                                    pos_hint: {'y': 0.2}
+                                    padding_right: 10
+                                    user_font_size: "0.5sp"
+
+                                MDLabel:
+                                    text: f'  Hà Nội ~ Ngày đăng: Hôm nay'
+                                    font_style: 'Overline'
+                                    theme_text_color: 'Custom'
+                                    text_color: get_color_from_hex('#0000ff')
+                                    font_size: 11
+                            
+                            MDBoxLayout:
+                                adaptive_height: True
+                                padding: 15, 5, 20, 0
+                                MDLabel: 
+                                    text: 'adsfsadfasdfadsfasdfasdfsadfghasdfasfadsfdsfguasdasdfdsaftusadtasdyfusdauyftsadasdfytsaduyftasudfgausdyftausydftasaduftsuatfu8asdtfrgsdfgsdfgsdfgsdfsdfgsdfgsfdgsdfgfg'
+                                    adaptive_height: True
+
+<MyLeftIcon@MDIconButton>
+    user_font_size: "1sp"
