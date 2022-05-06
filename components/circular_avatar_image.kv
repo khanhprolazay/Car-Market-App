@@ -3,6 +3,8 @@
     size_hint: None, None
     size: 62, 100
     elevation: 0
+    id: root.idx
+    md_bg_color: get_color_from_hex(root.color)
 
     MDRelativeLayout:
         size_hint: None, None
@@ -12,21 +14,35 @@
             radius: [50,]
             size: 75, 75
             md_bg_color: get_color_from_hex('#000000')
+            id: line
         
         Circle:
             radius: [50,]
             size: 70, 70
             md_bg_color: 1, 1, 1, 1
 
-        FitImage:
+        AvatarFitImage:
             source: root.avatar 
             size_hint: None, None
             size: 68, 68
             radius: [68]
             pos_hint: {"center_x": 0.5,"center_y": 0.6}
+            on_press: 
+                root.changeLineColor()
+        
+        MDLabel:
+            text: root.name
+            halign: 'center'
+            pos_hint: {"center_x": 0.5 ,"center_y": 0.1}
+            font_size: 11
+            theme_text_color: 'Custom'
+            text_color: 0, 0, 0, 1
+            id: lb_name
     
 
 <Circle@MDCard>
     size_hint: None, None
     elevation: 0
     pos_hint: {"center_x": 0.5,"center_y": 0.6}
+
+<AvatarFitImage@ButtonBehavior+FitImage>:

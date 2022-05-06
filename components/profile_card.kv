@@ -20,11 +20,11 @@
                 orientation: 'vertical'
                 padding: 35, 0, 0, 15  #left, top, right, bottom
                 MDLabel:
-                    text: "Lê Minh"
+                    text: root.username
                     font_style: "H5"
                     adaptive_height: True
                 MDLabel:
-                    text: "khanhprolazay@gmail.com"
+                    text: root.gmail
                     font_style: "H5"
                     font_size: 10
                     adaptive_height: True
@@ -34,19 +34,24 @@
             spacing: 2
             adaptive_height: True
             MDIconButton:
-                icon: "heart-outline"          
-                on_release: 
+                id: heart_icon  
+                icon: "heart-outline"     
+                theme_text_color: 'Custom'                 
+                on_press: 
                     root.Like()        
             MDIconButton:
+                id: history_icon
                 icon: "history"
-                on_release:
+                theme_text_color: 'Custom'
+                on_press:
                     root.History()
             MDIconButton:
                 icon: "eraser"
-                on_release: root.clearHistory()
+                on_press: 
+                    root.clearHistory()
             MDIconButton:
                 icon: "arrow-left-bold-outline"
-                on_release: 
+                on_press: 
                     root.toFormListCar()
             
             Widget:

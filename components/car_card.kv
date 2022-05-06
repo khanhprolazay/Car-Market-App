@@ -7,6 +7,7 @@
     divider: None
     spacing: -10
     md_bg_color: get_color_from_hex('#FFFFFF')
+    id: root.idx
 
     MyFitImage:
         source: root.car_image
@@ -47,12 +48,12 @@
             padding: 30, 0, 0, 0 # [padding_left, padding_top, padding_right, padding_bottom]
             adaptive_height: True
             MyLeftIcon:
-                icon: 'assets/tag_icon.png'
+                icon: 'assets/icon/tag_icon.png'
             MyLabel:
                 text: f'Tình trạng xe: {root.status_car}'
 
             MyLeftIcon:
-                icon: 'assets/calendar_icon.png'
+                icon: 'assets/icon/calendar_icon.png'
             MyLabel:
                 text: f'Năm sản xuất: {root.manufacture_year_car}'
 
@@ -63,12 +64,12 @@
             adaptive_height: True
 
             MyLeftIcon:
-                icon: 'assets/street_icon.png'
+                icon: 'assets/icon/street_icon.png'
             MyLabel:
                 text: f'Số km đã đi: {root.km_car}'
 
             MyLeftIcon:
-                icon: 'assets/shift_stick_icon.png'
+                icon: 'assets/icon/shift_stick_icon.png'
             MyLabel:
                 text: f'Hộp số: {root.shift_stick_inform_car}'
     MDBoxLayout:
@@ -76,7 +77,7 @@
         padding: 30, 10, 0, 0
 
         MDIconButton:
-            icon: 'assets/location_icon.png'
+            icon: 'assets/icon/location_icon.png'
             pos_hint: {'y': 0.2}
             padding_right: 10
             user_font_size: "0.5sp"
