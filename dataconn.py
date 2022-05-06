@@ -9,15 +9,8 @@ def create_connection(db_file):
         print(e)
     return conn
 
-def Filter_hang_xe(db_file, hang_xe):
-    conn = create_connection(db_file)
+def Filter_hang_xe(conn, query, hang_xe):
     cur = conn.cursor()
-    query = """
-        SELECT id
-        FROM Car_data
-        WHERE instr(Tieu_de, ?) > 0
-        LIMIT 20 OFFSET 20;
-    """
     cur.execute(query,[hang_xe])
     rows = cur.fetchall()
     return rows
