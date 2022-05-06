@@ -1,141 +1,162 @@
 #:import get_color_from_hex kivy.utils.get_color_from_hex
 <DetailCarScreen>:
-    MDScreen:
-        #md_bg_color: get_color_from_hex('#000000')
-        MDRectangleFlatIconButton:
-            text:"Like"
-            icon: "cards-heart-outline"
-            line_color:(0.5, 0, 0.5, 1)
-            pos_hint:{"center_x": 0.6, "center_y": 0.85}
-            font_size: 10
-        MDRectangleFlatIconButton:
-            text:"Save"
-            icon: "content-save"
-            line_color:(0.5, 0, 0.5, 1)
-            pos_hint:{"center_x": 0.85, "center_y": 0.85}
-            font_size: 10  
+    MDBoxLayout: 
+        orientation: 'vertical'
         MDBoxLayout:
-            orientation: 'horizontal'
-            padding: 20, 0, 0, 465 # [padding_left, padding_top, padding_right, padding_bottom]
+            padding: '5dp'
             adaptive_height: True
+            md_bg_color: get_color_from_hex("#20B2AA")
 
-            MyLeftIcon:
-                icon: 'assets/tag_icon.png'
-            MyLabel:
-                text: f'Tình trạng xe: {root.status_car}'
-            MyLeftIcon:
-                icon: 'assets/icon_Quang_Duong.png'
-            MyLabel:
-                text: f'Số km đã đi: {root.km_car}'
+            MDIconButton:
+                icon: 'keyboard-backspace'
+                theme_text_color: "Custom"
+                text_color: get_color_from_hex("#FFFFFF")
+                on_press:
+                    root.changeScreen()
+            MDLabel:
+                text: 'THÔNG TIN XE'
+                font_size: 20
+                theme_text_color: 'Custom'
+                text_color: get_color_from_hex('#FFFFFF')
+                
         MDBoxLayout:
-            orientation: 'horizontal'
-            padding: 20, 0, 0, 430 # [padding_left, padding_top, padding_right, padding_bottom]
-            adaptive_height: True
-            MyLeftIcon:
-                icon: 'assets/shift_stick_icon.png'
-            MyLabel:
-                text: f'Hộp số: {root.shift_stick_inform_car}'
-            MyLeftIcon:
-                icon: 'assets/calendar_icon.png'
-            MyLabel:
-                text: f'Năm sản xuất: {root.manufacture_year_car}'
-        MDBoxLayout:
-            orientation: 'horizontal'
-            padding: 20, 0, 0, 400 # [padding_left, padding_top, padding_right, padding_bottom]
-            adaptive_height: True
-            MyLeftIcon:
-                icon: 'assets/icon_car.png'
-            MyLabel:
-                text: f'Dòng Xe: {root.Dong_xe}'
-            MyLeftIcon:
-                icon: 'assets/icon_nhien_lieeu.png'
-            MyLabel:
-                text: f'Nhiên Liệu: {root.Nhien_Lieu}'
-        MDBoxLayout:
-            orientation: 'horizontal'
-            padding: 20, 0, 0, 370 # [padding_left, padding_top, padding_right, padding_bottom]
-            adaptive_height: True
-            MyLeftIcon:
-                icon: 'assets/Nguoi_Ban.png'
-            MyLabel:
-                text: f'Người Bán: {root.Nguoi_Ban}'
-            MyLeftIcon:
-                icon: 'assets/icon_Dong_co.png'
-            MyLabel:
-                text: f'Dẫn Động: {root.Dan_dong}'
-        MDBoxLayout:
-            orientation: 'horizontal'
-            padding: 20, 0, 0, 340 # [padding_left, padding_top, padding_right, padding_bottom]
-            adaptive_height: True
+            ScrollView:
+                bar_width: 0
+                MDBoxLayout:
+                    adaptive_height: True
 
-            MyLeftIcon:
-                icon: 'assets/icon_Mau_xe.png'
-            MyLabel:
-                text: f'Màu Xe: {root.Mau_Xe}'
-            MyLeftIcon:
-                icon: 'assets/icon_vi_tri.png'
-            MyLabel:
-                text: f'Xuất Xứ: {root.Xuat_Xu}'
-        
-        MDRoundFlatButton:
-            text: "Back"
-            font_style: "H3"
-            font_size: 12
-            pos_hint: {"center_x": 0.5, 'center_y': 0.05}
-            theme_text_color: 'Custom'
-            text_color: get_color_from_hex('#000000')
-            on_release:
-                root.changeScreen()
-        
-        MDSwiper:
-            size_hint_y: None
-            height: root.height - dp(300)
-            y: root.height - self.height - dp(320)    
-            pos_hint: {"center_x": 0.5, 'center_y': 0.4}    
-            MDSwiperItem:
-                FitImage:
-                    source: root.car_image
-                    size_hint_y: 0.5
-                    size_hint_x: 2
-                    allow_stretch: True
-                    keep_ratio: False
-                    radius: [20,]          
-            MDSwiperItem:
-                FitImage:
-                    source: root.car_image1
-                    size_hint_y: 0.5
-                    size_hint_x: 2
-                    allow_stretch: True
-                    keep_ratio: False  
-                    radius: [20,]       
-            MDSwiperItem:
-                FitImage:
-                    source: root.car_image2
-                    size_hint_y: 0.5
-                    size_hint_x: 2
-                    allow_stretch: True
-                    keep_ratio: False  
-                    radius: [20,]         
-            MDSwiperItem:
-                FitImage:
-                    source: root.car_image3
-                    size_hint_y: 0.5
-                    size_hint_x: 2
-                    allow_stretch: True
-                    keep_ratio: False  
-                    radius: [20,]    
-            MDSwiperItem:
-                FitImage:
-                    source: root.car_image4
-                    size_hint_y: 0.5
-                    size_hint_x: 2
-                    allow_stretch: True
-                    keep_ratio: False  
-                    radius: [20,]
-        MDToolbar:
-            id: toolbar
-            title: root.inform_car
-            elevation: 5
-            pos_hint: {"top": 1}
-            user_font_size: "H4"
-              
+                    MDBoxLayout:
+                        orientation: 'vertical'
+                        adaptive_height: True
+                        spacing: 10
+
+                        MDBoxLayout:
+                            adaptive_height: True
+                            padding: 25, 10, 0, 0
+                            MDBoxLayout:
+                                orientation: 'vertical'
+                                MDLabel:
+                                    text: f'{root.inform_car}'
+                                    adaptive_height: True
+                                    theme_text_color: 'Custom'
+                                    font_style: 'Overline'
+                                    font_size: 12          
+                                    pading: 0, 10, 0, 0              
+                                MDLabel:
+                                    text: f'Giá: {root.price_car}'
+                                    adaptive_height: True
+                                    theme_text_color: 'Custom'
+                                    font_style: 'H6'
+                                    text_color: get_color_from_hex('#EB144C')
+                            MDIconButton:
+                                icon: 'heart'
+                                theme_text_color: 'Custom'
+                                text_color: get_color_from_hex('#000000')
+                                id: heart_icon
+                                on_press: root.heartIcon()
+                        ScrollView:
+                            size_hint_y: None
+                            bar_width: 0
+                            height: 130
+                            MDBoxLayout:
+                                adaptive_width: True
+                                MDBoxLayout:
+                                    size_hint_y: None
+                                    adaptive_width: True
+                                    spacing: 10
+                                    id: list_image_car
+
+                        MDBoxLayout:
+                            orientation: 'vertical'
+                            spacing: 5
+                            padding: 10, 10, 10, 0
+                            adaptive_height: True
+                            MDBoxLayout:
+                                adaptive_height: True
+                                MyLeftIcon:
+                                    icon: 'assets/icon/tag_icon.png'
+                                MDLabel:
+                                    text: f'Tình trạng xe: {root.status_car}'
+                                    font_style:'Caption'
+                                MyLeftIcon:
+                                    icon: 'assets/icon/icon_Quang_Duong.png'
+                                MDLabel:
+                                    text: f'Số km đã đi: {root.km_car}'
+                                    font_style:'Caption'
+                            
+                            MDBoxLayout:
+                                adaptive_height: True
+                                MyLeftIcon:
+                                    icon: 'assets/icon/shift_stick_icon.png'
+                                MDLabel:
+                                    text: f'Hộp số: {root.shift_stick_inform_car}'
+                                    font_style:'Caption'
+                                MyLeftIcon:
+                                    icon: 'assets/icon/calendar_icon.png'
+                                MDLabel:
+                                    text: f'Năm sản xuất: {root.manufacture_year_car}'
+                                    font_style:'Caption' 
+
+                            MDBoxLayout:
+                                adaptive_height: True
+                                MyLeftIcon:
+                                    icon: 'assets/icon/icon_car.png'
+                                MDLabel:
+                                    text: f'Dòng Xe: {root.Dong_xe}'
+                                    font_style:'Caption'
+                                MyLeftIcon:
+                                    icon: 'assets/icon/icon_nhien_lieeu.png'
+                                MDLabel:
+                                    text: f'Nhiên Liệu: {root.Nhien_Lieu}'
+                                    font_style:'Caption' 
+                        
+                            MDBoxLayout:
+                                adaptive_height: True
+                                MyLeftIcon:
+                                    icon: 'assets/icon/Nguoi_Ban.png'
+                                MDLabel:
+                                    text: f'Người Bán: {root.Nguoi_Ban}'
+                                    font_style:'Caption'
+                                MyLeftIcon:
+                                    icon: 'assets/icon/icon_Dong_co.png'
+                                MDLabel:
+                                    text: f'Dẫn Động: {root.Dan_dong}'
+                                    font_style:'Caption'
+
+                            MDBoxLayout:
+                                adaptive_height: True
+                                MyLeftIcon:
+                                    icon: 'assets/icon/icon_Mau_xe.png'
+                                MDLabel:
+                                    text: f'Màu Xe: {root.Mau_Xe}'
+                                    font_style:'Caption'
+                                MyLeftIcon:
+                                    icon: 'assets/icon/icon_vi_tri.png'
+                                MDLabel:
+                                    text: f'Xuất Xứ: {root.Xuat_Xu}'
+                                    font_style:'Caption'
+
+                        MDBoxLayout:
+                            orientation: 'horizontal'
+                            padding: 15, 0, 0, 0
+                            adaptive_height: True
+
+                            MDIconButton:
+                                icon: 'assets/icon/location_icon.png'
+                                pos_hint: {'y': 0.2}
+                                padding_right: 10
+                                user_font_size: "0.5sp"
+
+                            MDLabel:
+                                text: f'  {root.place} ~ Ngày đăng: {root.day}'
+                                font_style: 'Overline'
+                                theme_text_color: 'Custom'
+                                text_color: get_color_from_hex('#0000ff')
+                                font_size: 11
+                        
+                        MDBoxLayout:
+                            adaptive_height: True
+                            padding: 15, 5, 20, 0
+                            MDLabel: 
+                                text: f'{root.Mo_Ta}'
+                                adaptive_height: True

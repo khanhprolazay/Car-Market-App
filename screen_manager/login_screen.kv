@@ -48,17 +48,6 @@
                 password: True
 
             MDRoundFlatButton:
-                text: "Sign up"
-                font_style: "H3"
-                font_size: 12
-                pos_hint: {"center_x": 0.5}
-                theme_text_color: 'Custom'
-                text_color: get_color_from_hex('#FFFFFF')
-                on_release:
-                    root.manager.transition.direction = 'left' 
-                    root.manager.current = 'register'
-            
-            MDRoundFlatButton:
                 text: "Log in"
                 font_style: "H3"
                 font_size: 12
@@ -68,6 +57,17 @@
                 on_release:
                     root.manager.transition.direction = 'left' 
                     root.validate()
+                    
+            MDRoundFlatButton:
+                text: "Sign up"
+                font_style: "H3"
+                font_size: 12
+                pos_hint: {"center_x": 0.5}
+                theme_text_color: 'Custom'
+                text_color: get_color_from_hex('#FFFFFF')
+                on_release:
+                    root.manager.transition.direction = 'left' 
+                    root.manager.current = 'register'
             
             Widget:
                 size_hint_y: None
