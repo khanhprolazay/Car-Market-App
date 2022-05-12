@@ -1,3 +1,28 @@
+#:import MDFlatButton kivymd.uix.button
+#:import Factory kivy.factory.Factory
+<LogoutDialog@Popup>:
+    auto_dismiss: True
+    size_hint: 1, 0.18
+    pos_hint: {'center_x': 0.5}
+    title: 'Do you want to logout?'
+    BoxLayout:
+        orientation: 'vertical'
+        size: root.width, root.height
+        BoxLayout:
+            spacing: 5
+            Widget:
+            Button:
+                text: "Cancel"
+                size_hint: None, None
+                size: 80, 35
+                on_release: root.dismiss()
+            Button:
+                text: 'Yes'
+                size_hint: None, None
+                size: 80, 35
+                on_release:
+                    root.dismiss()
+                    app.toFormLogin()
 <ProfileCard>:
     orientation: 'vertical'
     size_hint_y: None
@@ -6,16 +31,13 @@
     id: root.id
     MDBoxLayout:
         orientation: 'vertical'
-
         MDBoxLayout:
             size_hint: None, None
             size: 300, 80
-
             CircularAvatarImage: 
                 avatar: 'assets/profile_picture.png'
                 adaptive_height: True
                 pos_hint: {"top":0.9}
-
             MDBoxLayout: 
                 orientation: 'vertical'
                 padding: 35, 0, 0, 15  #left, top, right, bottom
@@ -60,4 +82,4 @@
                 icon: 'logout'
                 on_release:
                     root.flag = False
-                    root.toFormLogin()
+                    Factory.LogoutDialog().open()

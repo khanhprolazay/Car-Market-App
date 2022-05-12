@@ -1,0 +1,18 @@
+#:import MDFlatButton kivymd.uix.button
+#:import Factory kivy.factory.Factory
+<LogoutDialog@Popup>:
+    auto_dismiss: True
+    size_hint: 0.6, 0.2
+    pos_hint: {'x': 0.2, 'top': 0.9}
+    BoxLayout:
+        orientation: 'vertical'
+        size: root.width, root.height
+        Label:
+            text: 'Do you want to logout?'
+            font_size: 24
+        BoxLayout:
+            Button:
+                text: "Cancel"
+            Button:
+                text: 'Yes'
+        
