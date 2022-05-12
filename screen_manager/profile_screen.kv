@@ -1,25 +1,23 @@
 #:import get_color_from_hex kivy.utils.get_color_from_hex
 <ProfileScreen>:
-    #md_bg_color: get_color_from_hex('#FFFFFF')
-
     MDBoxLayout:
         md_bg_color: get_color_from_hex('#000000')
         orientation: 'vertical'
+
         MDBoxLayout:
             id: box
             orientation: 'vertical'
             adaptive_height: True
-        MDBoxLayout:
-            RecycleView:
-                id: listitem
-                viewclass: "CarCard"
-                bar_width: 0
-                adaptive_height: True
-                RecycleBoxLayout:
-                    size_hint_y: None
-                    height: self.minimum_height
-                    default_size: None, 350
-                    default_size_hint: 1, None
-                    orientation: 'vertical'
-                    spacing: 10
+
+        RecycleView:
+            id: listitem
+            viewclass: "CarCard"
+            bar_width: 0
+            RecycleBoxLayout:
+                size_hint_y: None
+                height: self.minimum_height
+                default_size: None, 350
+                default_size_hint: 1, None
+                orientation: 'vertical'
+                spacing: 30
                     

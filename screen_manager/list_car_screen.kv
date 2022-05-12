@@ -3,6 +3,7 @@
     md_bg_color: get_color_from_hex('#000000')
 
     MDBoxLayout:
+        id: box
         orientation: 'vertical'
         ScrollView:
             size_hint_y: None
@@ -16,6 +17,7 @@
                     spacing: 25
                     md_bg_color: get_color_from_hex("#20B2AA")
                     id: listlogo
+
         RecycleView:
             id: listitem
             viewclass: "CarCard"
@@ -27,16 +29,18 @@
                 default_size_hint: 1, None
                 orientation: 'vertical'
                 spacing: 30
-        
+
         MDBoxLayout:
             adaptive_height: True
             spacing: 10
             padding: 3, 0, 0, 0
             md_bg_color: get_color_from_hex("#FFFFFF")
-            
             MDIconButton:
                 icon: 'car'
                 user_font_size: "25sp"
+                on_release:
+                    root.manager.transition.direction = 'right' 
+                    root.manager.current = 'predictpricescreen'
             MDIconButton:
                 icon: 'arrow-left-circle'
                 user_font_size: "25sp"
@@ -66,5 +70,15 @@
                     size: 35, 35
                     radius: [25, 25]
 
-
+<Recycleviewlist>:
+    id: root.id
+    viewclass: "CarCard"
+    bar_width: 0
+    RecycleBoxLayout:
+        size_hint_y: None
+        height: self.minimum_height
+        default_size: None, 350
+        default_size_hint: 1, None
+        orientation: 'vertical'
+        spacing: 30
 
