@@ -11,11 +11,11 @@
                 MDBoxLayout:
                     padding: '5dp'
                     adaptive_height: True
-                    md_bg_color: get_color_from_hex("#20B2AA")
+                    md_bg_color: app.teal_color
                     MDIconButton:
                         icon: 'keyboard-backspace'
                         theme_text_color: "Custom"
-                        text_color: get_color_from_hex("#FFFFFF")
+                        text_color: app.white_color
                         on_press:
                             root.manager.transition.direction = 'right' 
                             root.manager.current = 'listcarscreen'
@@ -25,7 +25,7 @@
                         font_size: 20
                         theme_text_color: 'Custom'
                         font_style: 'H6'
-                        text_color: get_color_from_hex('#FFFFFF')
+                        text_color: app.white_color
 
                 MDBoxLayout:
                     adaptive_height: True
@@ -92,27 +92,19 @@
                                 text: 'Xăng'
                                 size_hint_y: None
                                 height: 50
-                                color: get_color_from_hex('#000000')
+                                color: app.black_color
                                 background_normal: ''
-                                background_color: get_color_from_hex('#DCDCDC')
+                                background_color: app.gray_color
                                 on_press:
                                     root.fuel = 'Xăng'
                                     root.changeFuelColor()
                             Button:
                                 text: 'Dầu'
-                                color: get_color_from_hex('#000000')
+                                color: app.black_color
                                 background_normal: ''
-                                background_color: get_color_from_hex('#DCDCDC')
+                                background_color: app.gray_color
                                 on_press:
                                     root.fuel = 'Dầu'
-                                    root.changeFuelColor()
-                            Button:
-                                text: 'Điện'
-                                color: get_color_from_hex('#000000')
-                                background_normal: ''
-                                background_color: get_color_from_hex('#DCDCDC')
-                                on_press:
-                                    root.fuel = 'Điện'
                                     root.changeFuelColor()
 
                 MDBoxLayout:
@@ -139,25 +131,25 @@
                                 text: 'Số sàn'
                                 size_hint_y: None
                                 height: 50
-                                color: get_color_from_hex('#000000')
+                                color: app.black_color
                                 background_normal: ''
-                                background_color: get_color_from_hex('#DCDCDC')
+                                background_color: app.gray_color
                                 on_press:
                                     root.shift_stick = 'Số sàn'
                                     root.changeShiftStickColor()
                             Button:
                                 text: 'Tự động'
-                                color: get_color_from_hex('#000000')
+                                color: app.black_color
                                 background_normal: ''
-                                background_color: get_color_from_hex('#DCDCDC')
+                                background_color: app.gray_color
                                 on_press:
                                     root.shift_stick = 'Tự động'
                                     root.changeShiftStickColor()
                             Button:
                                 text: 'Bán tự động'
-                                color: get_color_from_hex('#000000')
+                                color: app.black_color
                                 background_normal: ''
-                                background_color: get_color_from_hex('#DCDCDC')
+                                background_color: app.gray_color
                                 on_press:
                                     root.shift_stick = 'Bán tự động'
                                     root.changeShiftStickColor()
@@ -183,7 +175,7 @@
                             width: 270
                             height: 200
                             icon_right: 'magnify'
-                            normal_color: get_color_from_hex('#FFFFFF')
+                            normal_color: app.white_color
 
                 MDBoxLayout:
                     adaptive_height: True
@@ -206,7 +198,7 @@
                             width: 270
                             height: 200
                             icon_right: 'magnify'
-                            normal_color: get_color_from_hex('#FFFFFF')
+                            normal_color: app.white_color
 
                 MDBoxLayout:
                     adaptive_height: True
@@ -229,7 +221,7 @@
                             width: 270
                             height: 200
                             icon_right: 'magnify'
-                            normal_color: get_color_from_hex('#FFFFFF')
+                            normal_color: app.white_color
 
                 MDBoxLayout:
                     adaptive_height: True
@@ -248,4 +240,4 @@
     width: 270
     height: 200
     icon_right: 'magnify'
-    normal_color: get_color_from_hex('#FFFFFF')
+    normal_color: app.white_color

@@ -1,6 +1,6 @@
 #:import get_color_from_hex kivy.utils.get_color_from_hex
 <ListCarScreen>: 
-    md_bg_color: get_color_from_hex('#000000')
+    md_bg_color: app.black_color
 
     MDBoxLayout:
         id: box
@@ -15,7 +15,7 @@
                     adaptive_width: True
                     size_hint_y: None
                     spacing: 25
-                    md_bg_color: get_color_from_hex("#20B2AA")
+                    md_bg_color: app.teal_color
                     id: listlogo
 
         RecycleView:
@@ -32,44 +32,40 @@
 
         MDBoxLayout:
             adaptive_height: True
-            spacing: 10
-            padding: 3, 0, 0, 0
-            md_bg_color: get_color_from_hex("#FFFFFF")
+            spacing: 12
+            padding: 2, 0, 0, 0
+            md_bg_color: app.white_color
             MDIconButton:
                 icon: 'car'
-                user_font_size: "25sp"
                 on_release:
-                    root.manager.transition.direction = 'right' 
+                    root.manager.transition.direction = 'left' 
                     root.manager.current = 'predictpricescreen'
             MDIconButton:
                 icon: 'arrow-left-circle'
-                user_font_size: "25sp"
                 on_release:
                     root.leftArrowIcon()
             MDIconButton:
                 icon: 'home'
-                user_font_size: "25sp"
                 on_release:
                     root.homeIcon()
             MDIconButton:
                 icon: 'arrow-right-circle'
-                user_font_size: "25sp"
                 on_release:
                     root.rightArrowIcon()
             MDCard:
                 size_hint: None, None
                 size: 35, 35
                 radius: [25, 25]
-                size_hint: None, None
                 pos_hint: {"center_x": 0.5,"center_y": 0.5}
                 ripple_behavior: True
                 focus_behavior: True
                 on_release: root.toProfileForm()
                 FitImage:
-                    source: "assets/profile_picture.png"
-                    size: 35, 35
+                    id: image
+                    source: app.image
+                    size: 30, 30
                     radius: [25, 25]
-
+                    
 <Recycleviewlist>:
     id: root.id
     viewclass: "CarCard"
