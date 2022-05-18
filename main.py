@@ -1,35 +1,38 @@
+from turtle import title
 from kivy.lang import Builder
-from kivymd.app import MDApp
+from kivy.utils import get_color_from_hex
+from kivy.clock import Clock
+from kivy.properties import ObjectProperty, StringProperty, NumericProperty, ColorProperty
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.core.window import Window
-from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.uix.label import Label
-from kivymd.uix.card import MDCard
 from kivy.uix.image import Image
-from kivy.utils import get_color_from_hex
-from kivymd.utils.fitimage import FitImage
-import pandas as pd
-from kivymd.uix.screen import MDScreen
-from kivymd.uix.list import OneLineAvatarListItem
-from kivy.clock import Clock
-import components.fit_image
-import dataconn
 from kivy.uix.recycleview import RecycleView
 from kivy.uix.recycleview.views import RecycleDataViewBehavior
+from kivymd.app import MDApp
+from kivymd.uix.card import MDCard
+from kivymd.utils.fitimage import FitImage
+from kivymd.uix.screen import MDScreen
+from kivymd.uix.list import OneLineAvatarListItem
 from kivymd.uix.dialog import MDDialog
 from assets.image import *
-from hot_reload.hotreload import Main
+import dataconn
+import components.fit_image
+import pickle
 
 class LoginForm(Screen):
     email = ObjectProperty(None)
     password = ObjectProperty(None)
 
     def validate(self):
-        if self.checkLogin(self.email.text, self.password.text):
-            query = "SELECT Name FROM Login WHERE email = '%s'"
-            MainApp.username = dataconn.executeSelectQueryOneContion(MainApp.conn, query, self.email.text)[0][0]
+        query = "SELECT * FROM Login WHERE email = '%s'"
+        data = dataconn.executeSelectQueryOneContion(MainApp.conn, query, self.email.text)
+        if len(data) != 0 and self.password.text == data[0][2]:
+            MainApp.username = data[0][0]
+            MainApp.gmail = data[0][1]
+            MainApp.image = data[0][3]
             MainApp.sm.transition.direction = 'left'
             MainApp.sm.current = "listcarscreen"
             self.reset()
@@ -50,33 +53,33 @@ class LoginForm(Screen):
             i += 1
         return check
 
-class RegisterForm(Screen):
+class RegisterScreen(Screen):
     fullname = ObjectProperty(None)
     email = ObjectProperty(None)
     password = ObjectProperty(None)
     confPass = ObjectProperty(None)
 
-    def loginBtn(self):
-        user = pd.DataFrame([[self.fullname.text, self.email.text, self.password.text]],
-                            columns=['Name', 'Email', 'Password'])
+    def Register(self):
         if self.email.text != "" or self.fullname.text != "" or self.password.text != "" or self.confPass.text != "":
-            if self.email.text not in MainApp.users['Email'].unique():
-                if self.password.text == self.confPass.text:
-                    user.to_csv('login.csv', mode='a', header=False, index=False)
-                    messageBox('Message', 'Register Done!')
-                    MainApp.sm.current = 'login'
-                    self.fullname.text = ""
-                    self.email.text = ""
-                    self.password.text = ""
-                    self.confPass.text = ""
-                else:
-                    messageBox('Warning!', 'Password must be same Confirm Password')
-                    self.confPass.text = ""
+            query = "SELECT * FROM Login WHERE email = '%s'"
+            data = dataconn.executeSelectQueryOneContion(MainApp.conn, query, self.email.text)
+            if len(data) != 0:
+                messageBox('Warning', 'Email is already taken')
             else:
-                messageBox('Warning!', 'Email already exist')
-                self.email.text = ""
+                if self.confPass.text != self.password.text:
+                    messageBox('Warning', 'Confirm password is incorrect')
+                else:
+                    query = '''INSERT INTO Login(Name, Email, Password, image) VALUES (?, ?, ?, ?)'''
+                    dataconn.executeInsertDeleteQuery(MainApp.conn, query, (self.fullname.text, self.email.text, self.password.text, 'assets/default_image.jpg'))
+                    messageBox('', 'Register successfully')
         else:
             messageBox('Invalid Form', 'Please fill in all inputs with valid information.')
+
+    def clearAll(self):
+        self.email.text = ""
+        self.fullname.text = ""
+        self.password.text = ""
+        self.confPass.text = ""
 
 class CarCard(RecycleDataViewBehavior, MDCard):
     car_image = StringProperty()
@@ -96,8 +99,8 @@ class CarCard(RecycleDataViewBehavior, MDCard):
             MainApp.toListScreen = True
         else:
             MainApp.toListScreen = False
-        query = '''INSERT INTO History(username, car_id) VALUES (?, ?)'''
-        dataconn.executeInsertDeleteQuery(MainApp.conn, query, (MainApp.username, self.idx))
+        query = '''INSERT INTO History(gmail, car_id) VALUES (?, ?)'''
+        dataconn.executeInsertDeleteQuery(MainApp.conn, query, (MainApp.gmail, self.idx))
 
         MainApp.sm.get_screen('detailcarscreen').idx = self.idx
         if self.ids['heart_icon'].text_color == MainApp.red_color:
@@ -107,23 +110,19 @@ class CarCard(RecycleDataViewBehavior, MDCard):
         MainApp.sm.transition.direction = 'left'
         MainApp.sm.current = 'detailcarscreen'
 
-    def insertValueToLikeTable(self):
-        query = '''INSERT INTO Like(username, car_id) VALUES (?, ?)'''
-        dataconn.executeInsertQuery(MainApp.conn, query, (MainApp.username, self.idx))
-
     def heartIcon(self):
         if self.ids['heart_icon'].text_color != MainApp.black_color:
             if MainApp.sm.current == 'profile':
                 MainApp.sm.get_screen('profile').changeHeartColor(self.idx, "#000000")
             MainApp.sm.get_screen('listcarscreen').changeHeartColor(self.idx, "#000000")
-            query = ''' DELETE FROM Like WHERE username = ? AND car_id = ?'''
-            dataconn.executeInsertDeleteQuery(MainApp.conn, query, (MainApp.username, self.idx))
+            query = ''' DELETE FROM Like WHERE gmail = ? AND car_id = ?'''
+            dataconn.executeInsertDeleteQuery(MainApp.conn, query, (MainApp.gmail, self.idx))
         else:
             if MainApp.sm.current == 'profile':
                 MainApp.sm.get_screen('profile').changeHeartColor(self.idx, "#EB144C")
             MainApp.sm.get_screen('listcarscreen').changeHeartColor(self.idx, "#EB144C")
-            query = '''INSERT INTO Like(username, car_id) VALUES (?, ?)'''
-            dataconn.executeInsertDeleteQuery(MainApp.conn, query, (MainApp.username, self.idx))
+            query = '''INSERT INTO Like(gmail, car_id) VALUES (?, ?)'''
+            dataconn.executeInsertDeleteQuery(MainApp.conn, query, (MainApp.gmail, self.idx))
         try:
             if MainApp.sm.get_screen('profile').ids['box'].children[0].ids['heart_icon'].text_color == MainApp.red_color:
                 MainApp.sm.get_screen('profile').ids['box'].children[0].Like()
@@ -143,6 +142,7 @@ class ListCarScreen(MDScreen):
             Window.size = [300, 600]
             self.list_logos()
             self.list_items()
+            self.ids['image'].source = MainApp.image
 
     def list_items(self):
         if self.logo_index == None:
@@ -151,8 +151,8 @@ class ListCarScreen(MDScreen):
         else:
             query = """SELECT * FROM Car_data WHERE instr(Tieu_de, ?) > 0 LIMIT 20 OFFSET """ + str(self.begin)
             data = dataconn.Filter_hang_xe(MainApp.conn, query, self.ids['listlogo'].children[self.logo_index].ids['lb_name'].text)
-        query = "SELECT car_id FROM Like WHERE username = '%s'"
-        like_car_id = dataconn.executeSelectQueryOneContion(MainApp.conn, query, MainApp.username)
+        query = "SELECT car_id FROM Like WHERE gmail = '%s'"
+        like_car_id = dataconn.executeSelectQueryOneContion(MainApp.conn, query, MainApp.gmail)
 
         index_in_data = 0
         for i in data:
@@ -200,13 +200,13 @@ class ListCarScreen(MDScreen):
 
     def reset(self):
         self.flag = True
-        self.begin = -20
+        self.begin = 0
         self.clearListItem()
 
     def list_logos(self):
         idx = len(logo) - 1
         for i in logo:
-            self.ids.listlogo.add_widget(CircularAvatarImage(avatar = logo.get(i), name = i, idx = idx, color = "#20B2AA"))
+            self.ids.listlogo.add_widget(CircularAvatarImage(avatar = logo.get(i), name = i, idx = idx, color = MainApp.teal_color))
             idx -= 1
 
     def clearListItem(self):
@@ -222,6 +222,8 @@ class ListCarScreen(MDScreen):
         self.clock = Clock.schedule_once(self.update_list_item, 0.5) 
 
     def homeIcon(self):
+        if self.logo_index != None:
+            self.ids['listlogo'].children[self.logo_index].ids['line'].md_bg_color = MainApp.black_color
         self.logo_index = None
         self.begin = 0
         self.clock = Clock.schedule_once(self.update_list_item, 0.5)
@@ -230,6 +232,8 @@ class ListCarScreen(MDScreen):
         self.clearListItem()
         self.ids.listlogo.clear_widgets()
         self.begin = 0
+        self.logo_index = None
+        self.logo_name = None
         self.flag = True
 
     def changeHeartColor(self, index, color):
@@ -301,13 +305,13 @@ class DetailCarScreen(MDScreen):
         if self.ids['heart_icon'].text_color != MainApp.black_color:
             self.ids['heart_icon'].text_color = MainApp.black_color
             MainApp.sm.get_screen('listcarscreen').changeHeartColor(self.idx, "#000000")
-            query = ''' DELETE FROM Like WHERE username = ? AND car_id = ?'''
-            dataconn.executeInsertDeleteQuery(MainApp.conn, query, (MainApp.username, self.idx))
+            query = ''' DELETE FROM Like WHERE gmail = ? AND car_id = ?'''
+            dataconn.executeInsertDeleteQuery(MainApp.conn, query, (MainApp.gmail, self.idx))
         else:
             self.ids['heart_icon'].text_color = MainApp.red_color
             MainApp.sm.get_screen('listcarscreen').changeHeartColor(self.idx, "#EB144C")
-            query = '''INSERT INTO Like(username, car_id) VALUES (?, ?)'''
-            dataconn.executeInsertDeleteQuery(MainApp.conn, query, (MainApp.username, self.idx))
+            query = '''INSERT INTO Like(gmail, car_id) VALUES (?, ?)'''
+            dataconn.executeInsertDeleteQuery(MainApp.conn, query, (MainApp.gmail, self.idx))
         try:
             if MainApp.sm.get_screen('profile').ids['box'].children[0].ids['heart_icon'].text_color == MainApp.red_color:
                 MainApp.sm.get_screen('profile').ids['box'].children[0].Like()
@@ -317,7 +321,6 @@ class DetailCarScreen(MDScreen):
             pass
 
 class ProfileScreen(MDScreen):
-    profile_picture = 'assets/profile_picture.png'
     flag_profile_card = True
     flag_fit_image = True
 
@@ -333,8 +336,8 @@ class ProfileScreen(MDScreen):
     def update_list_item(self, data):
         self.removeFitImage()
         self.ids.listitem.data = []
-        query = "SELECT car_id FROM Like"
-        like_car_id = dataconn.executeSelectQuery(MainApp.conn, query)
+        query = "SELECT car_id FROM Like WHERE gmail = '%s'"
+        like_car_id = dataconn.executeSelectQueryOneContion(MainApp.conn, query, MainApp.gmail)
 
         index_in_data = 0
         for i in data:
@@ -344,18 +347,18 @@ class ProfileScreen(MDScreen):
                 if car_index == k[0]:
                     color = "#EB144C"
                     break
-            self.ids.listitem.data.append({   "car_image": GetLink(i[12].split()[0]),
-                            "inform_car": i[0],
-                            "price_car": i[1],
-                            "status_car": i[2],
-                            "manufacture_year_car": i[8],
-                            "km_car": i[4],
-                            "shift_stick_inform_car": i[5],
-                            "place": i[14],
-                            "day": i[15],
-                            "heart_color": color,
-                            "idx": car_index,
-                            "index_in_data": index_in_data})
+            self.ids.listitem.data.append({ "car_image": GetLink(i[12].split()[0]),
+                                            "inform_car": i[0],
+                                            "price_car": i[1],
+                                            "status_car": i[2],
+                                            "manufacture_year_car": i[8],
+                                            "km_car": i[4],
+                                            "shift_stick_inform_car": i[5],
+                                            "place": i[14],
+                                            "day": i[15],
+                                            "heart_color": color,
+                                            "idx": car_index,
+                                            "index_in_data": index_in_data})
             index_in_data += 1
         self.flag = False
     
@@ -414,7 +417,7 @@ class PredictPriceScreen(MDScreen):
             MainApp.sm.get_screen('selectscreen').diction = logo
         else:
             MainApp.sm.get_screen('selectscreen').diction = type
-        MainApp.sm.transition.direction = 'right'
+        MainApp.sm.transition.direction = 'left'
         MainApp.sm.current = 'selectscreen'
 
     def changeLogoType(self, text):
@@ -435,13 +438,32 @@ class PredictPriceScreen(MDScreen):
         self.ids['km'].text = ''
 
     def openPredictDialog(self):
-        price = predictPrice(self.ids['logo_field'].text, self.ids['type_field'].text, self.fuel, self.shift_stick, self.ids['manufacture_year'].text, self.ids['seat'].text, self.ids['km'].text)
-        popup = Popup(  content = Label(text = str(price) + ' triệu'),
-                        auto_dismiss = True,
-                        size_hint=(None, None), 
-                        size=(300, 300),
-                        title = 'Xe của bạn được định giá: ')
+        if self.checkValidate():
+            price = predictPrice(self.ids['logo_field'].text, self.ids['type_field'].text, self.fuel, self.shift_stick, self.ids['manufacture_year'].text, self.ids['seat'].text, self.ids['km'].text)
+            if price != 0:
+                popup = Popup(  content=Label(text=str(price).replace('['," ").replace(']'," ").strip()+ 'Triệu đồng'),
+                                auto_dismiss = True,
+                                size_hint=(None, None), 
+                                size=(300, 300),
+                                title = 'Xe của bạn được định giá: ')
+            else:
+                popup = Popup(  content=Label(text = 'Xe của bạn không có trong CSDL'),
+                                auto_dismiss = True,
+                                size_hint=(None, None), 
+                                size=(300, 300),
+                                title = 'Lỗi')
+        else:
+            popup = Popup(  content=Label(text = 'Dữ liệu nhập không hợp lệ'),
+                            auto_dismiss = True,
+                            size_hint=(None, None), 
+                            size=(300, 300),
+                            title = 'Lỗi')
         popup.open()
+
+    def checkValidate(self):
+        if self.ids['logo_field'].text == "" or self.ids['type_field'].text == "" or self.fuel == None or self.shift_stick == False or isNumber(self.ids['manufacture_year'].text) == False or isNumber(self.ids['seat'].text) == False or isNumber(self.ids['km'].text) == False:
+            return False
+        return True
 
 class CustomListItem(OneLineAvatarListItem):
     image = StringProperty()
@@ -454,7 +476,7 @@ class CustomListItem(OneLineAvatarListItem):
             MainApp.sm.get_screen('predictpricescreen').ids['type_field'].text = text
 
     def toPredictScreen(self, text):
-        MainApp.sm.transition.direction = 'left'
+        MainApp.sm.transition.direction = 'right'
         MainApp.sm.current = 'predictpricescreen'
         MainApp.sm.get_screen('predictpricescreen').changeLogoType(text)
         MainApp.sm.get_screen('selectscreen').reset()
@@ -463,10 +485,11 @@ class CircularAvatarImage(MDCard):
     avatar = StringProperty()
     name = StringProperty()
     idx = NumericProperty()
-    color = StringProperty("#FFFFFF")
+    color = ColorProperty(get_color_from_hex('#FFFFFF'))
 
     def changeLineColor(self):
-        MainApp.sm.get_screen('listcarscreen').logoClick(self.idx)
+        if MainApp.sm.current == 'listcarscreen':
+            MainApp.sm.get_screen('listcarscreen').logoClick(self.idx)
 
 class ProfileCard(MDCard):
     id = StringProperty()
@@ -493,15 +516,15 @@ class ProfileCard(MDCard):
         MyApp.showLogoutDialog()
 
     def Like(self, *args):
-        query = "SELECT * FROM Car_data WHERE id in (SELECT car_id FROM Like where username = '%s')"
-        data = dataconn.executeSelectQueryOneContion(MainApp.conn, query, MainApp.username)
+        query = "SELECT * FROM Car_data WHERE id in (SELECT car_id FROM Like where gmail = '%s')"
+        data = dataconn.executeSelectQueryOneContion(MainApp.conn, query, MainApp.gmail)
         MainApp.sm.get_screen("profile").update_list_item(data)
         self.ids['heart_icon'].text_color = get_color_from_hex('#EB144C')
         self.ids['history_icon'].text_color = get_color_from_hex('#000000')
 
     def History(self, *args):
-        query = "SELECT * FROM Car_data WHERE id in (SELECT car_id FROM History where username = '%s')"
-        data = dataconn.executeSelectQueryOneContion(MainApp.conn, query, MainApp.username)
+        query = "SELECT * FROM Car_data WHERE id in (SELECT car_id FROM History where gmail = '%s')"
+        data = dataconn.executeSelectQueryOneContion(MainApp.conn, query, MainApp.gmail)
         MainApp.sm.get_screen("profile").update_list_item(data)
         self.ids['heart_icon'].text_color = get_color_from_hex('#000000')
         self.ids['history_icon'].text_color = get_color_from_hex('#EB144C')
@@ -542,7 +565,20 @@ class SelectScreen(MDScreen):
         self.ids['recycle_view'].data = []
 
 def predictPrice(logo, type, fuel, shift_stick, manufacture_year, seat, km):
-    return 100
+    lsHX = ['BMW', 'BYD', 'Chery', 'Chevrolet', 'Daewoo', 'Daihatsu', 'Ford', 'Hãng khác', 'Honda', 'Hyundai', 'Isuzu', 'Kia', 'Land Rover', 'Lexus', 'Mazda', 'Mercedes-Benz', 'Mitsubishi', 'Nissan', 'Peugeot', 'Porsche', 'SYM', 'Ssangyong', 'Suzuki', 'Toyota', 'Vinfast', 'Volkswagen']
+    lsKX = ['Coupe', 'Hatchback', 'Kiểu dáng khác', 'Minivan', 'Pick-up', 'SUV', 'Sedan', 'Van']
+    lsNL = ['Dầu', 'Xăng']
+    lsHS = ['Bán tự động', 'Số sàn', 'Tự động']
+    def getIndex(var,ls):
+        for i in range(0,len(ls)):
+            if var.lower() == ls[i].lower():
+                return str(i)
+    modelfile = pickle.load(open('models\DecisionTreeRegressorModel.pkl','rb'))
+    try:
+        pred = modelfile.predict([[manufacture_year, seat, km, getIndex(logo,lsHX), getIndex(type, lsKX), getIndex(fuel,lsNL), getIndex(shift_stick, lsHS)]])
+        return pred
+    except:
+        return 0
 
 def GetLink(link):
     try:
@@ -551,32 +587,40 @@ def GetLink(link):
     except:
         return ""
 
+def isNumber(text):
+    try:
+        temp = int(text)
+        return True
+    except:
+        return False
+
 def messageBox(title, content):
     pop = Popup(title=title,
                 content=Label(text=content),
-                size_hint=(None, None), size=(400, 400))
+                size_hint=(None, None), size=(300, 400))
     pop.open()
 
 class MainApp(MDApp):
     sm = ScreenManager()
-    users = pd.read_csv('assets/login.csv')
-    df = pd.DataFrame(users)
-    toListScreen = None
     conn = dataconn.create_connection("assets/database.db")
     username = "Le Minh"
     gmail = "khanhprolazay@gmail.com"
+    image = 'https://static.wikia.nocookie.net/youtubia-viet-nam/images/d/d0/MB3R.jpg/revision/latest/scale-to-width-down/900?cb=20220107075011&path-prefix=vi'
     black_color = get_color_from_hex("#000000")
+    white_color = get_color_from_hex("#FFFFFF")
     red_color = get_color_from_hex("#EB144C")
+    teal_color = get_color_from_hex("#008080")
+    gray_color = get_color_from_hex("#DCDCDC")
     dialog = None
 
     def build(self):
         Window.size = (300, 600)
         self.load_all_kivy_file()
         self.theme_cls.primary_palette = "Blue"
-        #self.sm.add_widget(PredictPriceScreen(name = 'predictpricescreen'))
+        #self.sm.add_widget(ListCarScreen(name='listcarscreen'))
         self.sm.add_widget(LoginForm(name='login'))
         self.sm.add_widget(ListCarScreen(name='listcarscreen'))
-        self.sm.add_widget(RegisterForm(name='register'))
+        self.sm.add_widget(RegisterScreen(name='register'))
         self.sm.add_widget(DetailCarScreen(name = 'detailcarscreen'))
         self.sm.add_widget(ProfileScreen(name = 'profile'))
         self.sm.add_widget(SelectScreen(name = 'selectscreen'))
@@ -589,6 +633,7 @@ class MainApp(MDApp):
         Builder.load_file('components/fit_image.kv')
         Builder.load_file('components/profile_card.kv')
         Builder.load_file('screen_manager/login_screen.kv')
+        Builder.load_file('screen_manager/register_screen.kv')
         Builder.load_file('screen_manager/detail_car_screen.kv')
         Builder.load_file('screen_manager/profile_screen.kv')
         Builder.load_file('screen_manager/predict_price_screen.kv')
