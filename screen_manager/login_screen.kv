@@ -3,7 +3,7 @@
     email: email
     password: password
     MDScreen:
-        md_bg_color: get_color_from_hex('#000000')
+        md_bg_color: app.black_color
         MDCard:
             size_hint: None,None
             size: 300, 400
@@ -24,7 +24,7 @@
                 height: self.texture_size[1]
                 padding_y: 15
                 theme_text_color: 'Custom'
-                text_color: get_color_from_hex('#FFFFFF')
+                text_color: app.white_color
 
             MDTextFieldRound:
                 id: email
@@ -53,8 +53,8 @@
                 font_size: 12
                 pos_hint: {"center_x": 0.5}
                 theme_text_color: 'Custom'
-                text_color: get_color_from_hex('#FFFFFF')
-                on_release:
+                text_color: app.white_color
+                on_press:
                     root.manager.transition.direction = 'left' 
                     root.validate()
                     
@@ -64,8 +64,8 @@
                 font_size: 12
                 pos_hint: {"center_x": 0.5}
                 theme_text_color: 'Custom'
-                text_color: get_color_from_hex('#FFFFFF')
-                on_release:
+                text_color: app.white_color
+                on_press:
                     root.manager.transition.direction = 'left' 
                     root.manager.current = 'register'
             

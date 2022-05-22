@@ -1,4 +1,3 @@
-from turtle import title
 from kivy.lang import Builder
 from kivy.utils import get_color_from_hex
 from kivy.clock import Clock
@@ -25,6 +24,10 @@ import pickle
 class LoginForm(Screen):
     email = ObjectProperty(None)
     password = ObjectProperty(None)
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        Window.bind(on_key_down=self._on_keyboard_down)
 
     def validate(self):
         query = "SELECT * FROM Login WHERE email = '%s'"
@@ -53,6 +56,10 @@ class LoginForm(Screen):
             i += 1
         return check
 
+    def _on_keyboard_down(self, instance, keyboard, keycode, text, modifiers):
+        if keycode == 40:  # 40 - Enter key pressed
+            self.validate()
+
 class RegisterScreen(Screen):
     fullname = ObjectProperty(None)
     email = ObjectProperty(None)
@@ -70,8 +77,11 @@ class RegisterScreen(Screen):
                     messageBox('Warning', 'Confirm password is incorrect')
                 else:
                     query = '''INSERT INTO Login(Name, Email, Password, image) VALUES (?, ?, ?, ?)'''
-                    dataconn.executeInsertDeleteQuery(MainApp.conn, query, (self.fullname.text, self.email.text, self.password.text, 'assets/default_image.jpg'))
-                    messageBox('', 'Register successfully')
+                    dataconn.executeInsertDeleteQuery(MainApp.conn, query, (self.fullname.text, self.email.text, self.password.text, 'assets/default.png'))
+                    messageBox('', 'Register successfully.')
+                    MainApp.sm.transition.direction = 'right'
+                    MainApp.sm.current = 'login'
+                    self.clearAll()
         else:
             messageBox('Invalid Form', 'Please fill in all inputs with valid information.')
 
@@ -554,7 +564,7 @@ class SelectScreen(MDScreen):
     def searchText(self, text):         
         self.ids.recycle_view.data = []
         for i in self.diction:
-            if text.title() in i:
+            if text.title() in i or text in i:
                 self.ids.recycle_view.data.append({     'text': i, 
                                                         'ImageLeftWidget': self.diction.get(i),
                                                         'viewclass': 'CustomListItem',
@@ -597,7 +607,8 @@ def isNumber(text):
 def messageBox(title, content):
     pop = Popup(title=title,
                 content=Label(text=content),
-                size_hint=(None, None), size=(300, 400))
+                size_hint=(None, None), size=(300, 250),
+                auto_dismiss = True)
     pop.open()
 
 class MainApp(MDApp):
@@ -617,9 +628,9 @@ class MainApp(MDApp):
         Window.size = (300, 600)
         self.load_all_kivy_file()
         self.theme_cls.primary_palette = "Blue"
-        #self.sm.add_widget(ListCarScreen(name='listcarscreen'))
-        self.sm.add_widget(LoginForm(name='login'))
         self.sm.add_widget(ListCarScreen(name='listcarscreen'))
+        self.sm.add_widget(LoginForm(name='login'))
+        #self.sm.add_widget(ListCarScreen(name='listcarscreen'))
         self.sm.add_widget(RegisterScreen(name='register'))
         self.sm.add_widget(DetailCarScreen(name = 'detailcarscreen'))
         self.sm.add_widget(ProfileScreen(name = 'profile'))
